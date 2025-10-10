@@ -1,54 +1,47 @@
-from skimage.transform import resize
-import pydicom
-import numpy as np
 import os
-import matplotlib.pyplot as plt
-import torch
-import numpy as np
-from sklearn.model_selection import StratifiedShuffleSplit
-from collections import defaultdict
-import pandas as pd
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
-from sklearn.utils import shuffle
-from imblearn.over_sampling import RandomOverSampler
-import tensorflow as tf
-import re
-from sklearn.decomposition import PCA
-import matplotlib.pyplot as pl
-
-
-path = r"Z:\Projects\Aneurysm\Raw Imaging Data\Coil"
-
-files = os.listdir(path)
 
 def get_bases_id(name):
     return "_".join(name.split("_")[:2])
+
 def get_treatment_steps(name):
     return "_".join(name.split("_")[:3])
-IDs = {}
 
-                    
-for _,iD in enumerate(files):
-    baseID = get_bases_id(iD)
-    if baseID in IDs:
-        IDs[baseID].append(get_treatment_steps(iD))
-    else:
-        IDs[baseID] = [get_treatment_steps(iD)]
-pretreatment = []
-treatment = []
-posttreatment = []
-                    
-                        
-for key,value in IDs.items():
-    if (key + "_0") in value:
-        pretreatment.append(key + "_0")
-    if (key + "_1") in value:
-        treatment.append(key + "_1")
-    if (key + "_2") in value:
-        posttreatment.append(key + "_2")
+def get_masks_base_id(name):
+    return "_".join(name.split("_")[1])
+
+def get_masks_steps(name):
+    return "_".join(name.split("_")[:2])
+
+def get_masks(name):
+    return "_".join(name.split("_")[:3])
+
+def get_views(name):
+    return "_".join(name.split("_")[:4])
+
+
+
+class get_files(object):
+    @staticmethod
+    def sep_treatment_steps(path = r"Z:\Projects\Aneurysm\Raw Imaging Data\Coil"):
+        files = os.listdir(path)
+        IDs = {}
+        for filename in files:
+            baseID = get_bases_id(filename)
+            IDs.setdefault(baseID, []).append(filename)
+
+        pretreatment = []
+        treatment = []
+        posttreatment = []
+
+        for baseID, file_list in IDs.items():
+            for f in file_list:
+                step = get_treatment_steps(f)
+                full_path = os.path.join(path, f)
+                if step.endswith("_0"):
+                    pretreatment.append(full_path)
+                elif step.endswith("_1"):
+                    treatment.append(full_path)
+                elif step.endswith("_2"):
+                    posttreatment.append(full_path)
+        return pretreatment, treatment, posttreatment
         
