@@ -52,12 +52,13 @@ class get_files(object):
                 elif step.endswith("_2"):
                     posttreatment[baseID].append(full_path)
         return IDs,pretreatment, treatment, posttreatment
-    
-    
-    @staticmethod         
+
+
+    @staticmethod
     def sep_mask_steps(path = ""):
         files = os.listdir(path)
         IDs = defaultdict(list)
+        IDs = {}
         for filename in files:
             baseID = get_bases_id(filename)
             IDs[baseID].append(filename)
@@ -83,7 +84,7 @@ class get_files(object):
     def image_mask_tuple(mask_path, image_path):
         masks_dic, pre_masks, treat_masks, post_masks = get_files.sep_mask_steps(mask_path)
         images_dic, pre_images, treat_images, post_images = get_files.sep_treatment_steps(image_path)
-        
+
         image_masks_tup_pre = []
         image_masks_tup_treat = []
         image_masks_tup_post = []
@@ -92,7 +93,7 @@ class get_files(object):
             if key in masks_dic:
                 for img_file in image_files:
                     if img_file in pre_images.get(key, []) and img_file in pre_masks.get(key, []):
-                        image_masks_tup_pre.append((img_file, img_file))  
+                        image_masks_tup_pre.append((img_file, img_file))
                     elif img_file in treat_images.get(key, []) and img_file in treat_masks.get(key, []):
                         image_masks_tup_treat.append((img_file, img_file))
                     elif img_file in post_images.get(key, []) and img_file in post_masks.get(key, []):
@@ -100,4 +101,4 @@ class get_files(object):
 
         return image_masks_tup_pre, image_masks_tup_treat, image_masks_tup_post
 
-        
+
