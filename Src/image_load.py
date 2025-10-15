@@ -1,5 +1,5 @@
 
-from treatmentseperation import get_files
+from treatmentseparation import get_files
 import numpy as np
 import pydicom
 
