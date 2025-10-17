@@ -14,26 +14,8 @@ import numpy as np
 def get_bases_id(name):
     return "_".join(name.split("_")[:2])
 
-# def get_treatment_steps(name):
-#     return "_".join(name.split("_")[:3])
-
-# def get_masks_base_id(name):
-#     return "_".join(name.split("_")[1])
-
-def get_masks_steps(name):
+def crop(name):
     return "_".join(name.split("_")[:-1])
-#
-# def get_masks(name):
-#     return "_".join(name.split("_")[-1])
-#
-# def get_views(name):
-#     return "_".join(name.split("_")[:4])
-
-def get_length(name):
-    return len(name.split("_"))
-
-def crop(name,index):
-    return "_".join(name.split("_")[:index])
 
 def sepdot(name):
     return name.split(".")[0]
@@ -48,7 +30,7 @@ class get_files(object):
         IDs = defaultdict(list)
         for filename in files:
             baseID = get_bases_id(filename)
-            IDs[baseID].append(filename)
+            IDs[baseID].append(sepdot(filename))
 
         pretreatment = defaultdict(list)
         treatment = defaultdict(list)
@@ -80,7 +62,7 @@ class get_files(object):
 
         for baseID, file_list in IDs.items():
             for f in file_list:
-                step = get_masks_steps(f)
+                step = crop(f)
                 full_path = os.path.join(path, f)
                 if step.endswith("_0"):
                     pretreatment[baseID].append(full_path + ".tif")
@@ -92,33 +74,43 @@ class get_files(object):
 
 
     @staticmethod
-    def image_mask_tuple(mask_path, image_path):
-         pre_masks, treat_masks, post_masks = get_files.sep_mask_steps(mask_path)
-         pre_images, treat_images, post_images = get_files.sep_treatment_steps(image_path)
+    def image_mask_tuple(image_path = r"Z:\Users\Artin\coiled\raw_file" , mask_path = r"Z:\Users\Artin\coiled\inlets"):
+        pre_masks, treat_masks, post_masks = get_files.sep_mask_steps(mask_path)
+        pre_images, treat_images, post_images = get_files.sep_treatment_steps(image_path)
 
-        image_masks_tup_pre = []
-        image_masks_tup_treat = []
-        image_masks_tup_post = []
 
-        for key, image_files in pre_images.item():
-            if key in pre_masks:
-                image_files = image_files.sort(key = len)
+        image_masks_tup_pre = defaultdict(list)
+        image_masks_tup_treat = defaultdict(list)
+        image_masks_tup_post = defaultdict(list)
 
-        for key, image_files in images_dic.items():
-            if key in masks_dic:
-                for item in masks_dic[key]:
-                    index = np.max()
-                    if img_file in pre_images.get(key, []) and img_file in pre_masks.get(key, []):
-                        image_masks_tup_pre.append((img_file, img_file))
-                    elif img_file in treat_images.get(key, []) and img_file in treat_masks.get(key, []):
-                        image_masks_tup_treat.append((img_file, img_file))
-                    elif img_file in post_images.get(key, []) and img_file in post_masks.get(key, []):
-                        image_masks_tup_post.append((img_file, img_file))
+        for key, file in pre_masks.items():
+            if key in pre_images:
+                for mask_item in file:
+                    image_item = os.path.join(image_path, crop(sepdot(os.path.basename(mask_item))))
+                    if image_item in pre_images.get(key,[]):
+                        image_masks_tup_pre[key].append((image_item, mask_item))
+
+        for key, file in treat_masks.items():
+            if key in treat_images:
+                for mask_item in file:
+                    image_item = os.path.join(image_path, crop(sepdot(os.path.basename(mask_item))))
+                    if image_item in pre_images.get(key,[]):
+                        image_masks_tup_treat[key].append((image_item, mask_item))
+
+        for key, file in post_masks.items():
+            if key in post_images:
+                for mask_item in file:
+                    image_item = os.path.join(image_path, crop(sepdot(os.path.basename(mask_item))))
+                    if image_item in pre_images.get(key,[]):
+                        image_masks_tup_post[key].append((image_item, mask_item))
 
         return image_masks_tup_pre, image_masks_tup_treat, image_masks_tup_post
 
 
+
+
 a = get_files()
-b = a.sep_mask_steps()[0]
-print(b["ANY_331"])
+b = a.image_mask_tuple()[0]
+print(b["ANY_143"])
+
 
