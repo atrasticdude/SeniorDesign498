@@ -94,14 +94,14 @@ class Separate(object):
             if key in treat_images:
                 for mask_item in file:
                     image_item = os.path.join(image_path, crop(sepdot(os.path.basename(mask_item))))
-                    if image_item in pre_images.get(key,[]):
+                    if image_item in treat_images.get(key,[]):
                         image_inlet_tup_treat[key].append((image_item, mask_item))
 
         for key, file in post_inlet.items():
             if key in post_images:
                 for mask_item in file:
                     image_item = os.path.join(image_path, crop(sepdot(os.path.basename(mask_item))))
-                    if image_item in pre_images.get(key,[]):
+                    if image_item in post_images.get(key,[]):
                         image_inlet_tup_post[key].append((image_item, mask_item))
 
         return image_inlet_tup_pre, image_inlet_tup_treat, image_inlet_tup_post
