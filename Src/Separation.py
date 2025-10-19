@@ -10,17 +10,7 @@ Created on Fri Oct 10 13:13:56 2025
 import os
 from collections import defaultdict
 import numpy as np
-
-def get_bases_id(name):
-    return "_".join(name.split("_")[:2])
-
-def crop(name):
-    return "_".join(name.split("_")[:-1])
-
-def sepdot(name):
-    return name.split(".")[0]
-
-
+from utils.helperfunction import get_bases_id, sepdot, crop
 
 
 class Separate(object):
