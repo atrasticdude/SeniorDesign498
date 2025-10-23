@@ -10,7 +10,8 @@ def sepdot(name):
     return name.split(".")[0]
 
 def getview(name):
-    return sepdot(os.basename(name)).split("_")[2]
+    return sepdot(os.path.basename(name)).split("_")[2]
+
 
 def sort_files_numerically(file_list):
     return sorted(file_list, key=lambda x: int(re.search(r'\d+', getview(x)).group()))
