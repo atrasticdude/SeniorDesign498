@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Oct 10 13:13:56 2025
-
-@author: artas
-"""
-
-
 
 import os
 from collections import defaultdict
@@ -99,8 +91,6 @@ class Separate(object):
 
 
 
-a = Separate()
-b = a.ImageInlet()[0]
-print(b["ANY_143"])
+
 
 
