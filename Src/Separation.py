@@ -31,7 +31,7 @@ class Separate(object):
 
 
     @staticmethod
-    def SepInlet(path =r"Z:\Users\Artin\coiled\inlets"):
+    def SepInlet(path = r"Z:\Users\Artin\coiled\inlets"):
         files = os.listdir(path)
         IDs = defaultdict(list)
         for filename in files:
@@ -53,6 +53,30 @@ class Separate(object):
                 elif step.endswith("_2"):
                     posttreatment[baseID].append(full_path + ".tif")
         return pretreatment, treatment, posttreatment
+
+    @staticmethod
+    def SepMasks(path=r"Z:\Users\Artin\coiled\aneurysms"):
+        files = os.listdir(path)
+        IDs = defaultdict(list)
+        for filename in files:
+            baseID = get_bases_id(filename)
+            IDs[baseID].append(sepdot(filename))
+
+        pretreatment = defaultdict(list)
+        treatment = defaultdict(list)
+        posttreatment = defaultdict(list)
+
+        for baseID, file_list in IDs.items():
+            for f in file_list:
+                full_path = os.path.join(path, f)
+                if full_path.endswith("_0"):
+                    pretreatment[baseID].append(full_path + ".tif")
+                elif full_path.endswith("_1"):
+                    treatment[baseID].append(full_path + ".tif")
+                elif full_path.endswith("_2"):
+                    posttreatment[baseID].append(full_path + ".tif")
+        return pretreatment, treatment, posttreatment
+
 
 
     @staticmethod
@@ -87,7 +111,6 @@ class Separate(object):
                         image_inlet_tup_post[key].append((image_item, mask_item))
 
         return image_inlet_tup_pre, image_inlet_tup_treat, image_inlet_tup_post
-
 
 
 
