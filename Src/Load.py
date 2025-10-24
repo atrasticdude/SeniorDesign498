@@ -1,3 +1,4 @@
+from pydicom.datadict import masks
 
 from Separation import Separate
 import numpy as np
@@ -29,6 +30,10 @@ class Load(object):
             self.imginl_data = self.GetImgInlet()
         else:
             self.imginl_data = None
+        if self.img_data and self.mask_data:
+            self.imgmas_data = self.GetImgMask()
+        else:
+            self.imgmas_data = None
 
 
 
@@ -99,6 +104,19 @@ class Load(object):
                         data[stage][key].append((img_array, inlet_array))
         return data
 
+    def GetImgMask(self):
+        data = defaultdict(lambda: defaultdict(list))
+        stages = ["PreTreatment", "Treatment", "PostTreatment"]
+
+        for stage in stages:
+            images_dict = self.img_data.get(stage, {})
+            masks_dict = self.mask_data.get(stage, {})
+            for key, mask_list in masks_dict.items():
+                if key in images_dict:
+                    for img_array, mask_array in zip(images_dict[key], mask_list):
+                        data[stage][key].append((img_array, mask_array))
+        return data
+
     def get_images(self):
         return self.img_data
     def get_inlets(self):
@@ -107,7 +125,8 @@ class Load(object):
         return self.mask_data
     def get_inlet_image(self):
         return self.imginl_data
-
+    def get_mask_image(self):
+        return self.imgmas_data
 
 
 
