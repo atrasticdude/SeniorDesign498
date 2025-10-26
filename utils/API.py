@@ -1,20 +1,20 @@
 import numpy as np
+from scipy.differentiate import derivative
 from scipy.interpolate import UnivariateSpline
 import matplotlib.pyplot as plt
 from scipy.signal import medfilt
 from scipy import interpolate
+from utils.helperfunction import BolusArrivalTime1D
 
 
 class API(object):
-    def __init__(self,dsa,roi):
+    def __init__(self,dsa,roi,x,y):
         self.dsa = dsa
-        if roi:
-            self.y = self.y_concentration(self.dsa,roi)
-        else:
-            self.y = self.y_concentration(self.dsa)
+        self.y = self.y_concentration(self.dsa,roi)
         self.x = self.x_time(self.dsa)
         self.x_inter = np.arange(0, np.max(self.x),0.1)
         self.tdc = self.time_density_curve(self.x,self.y)
+        self.api = self.API_Parameters(x,y)
 
 
     @staticmethod
@@ -47,7 +47,7 @@ class API(object):
         baseline = tdc_filtered[0] * np.ones_like(tdc_filtered)
         tdc_inv = baseline - tdc_filtered
         tdc_inv[tdc_inv < 0] = 0
-        f = interpolate.interp1d(x, y, kind='cubic', fill_value='extrapolate')
+        f = interpolate.interp1d(x, tdc_filtered, kind='cubic', fill_value='extrapolate')
         y_interp = f(self.x_inter)
         return y_interp
 
@@ -59,8 +59,65 @@ class API(object):
             raise Exception("Concentration or Time vector is empty")
         api = {}
         p_h = np.max(y, axis=0)
-        api["PeakHeight"] = p_h
+        api["PH"] = p_h
         p_h_i = np.argmax(y, axis=0)
+
+        bai = BolusArrivalTime1D(y)
+        if bai >= 0:
+            ttp = x[p_h_i]
+            api["TTP"] = ttp
+        else:
+            ttp = None
+            api["TimeToPeak"] = ttp
+
+        AUC_full = np.trapzoid(y,x)
+        api["AUC"] = AUC_full
+
+        half_max = p_h / 2.2
+        mtt_index = np.where(y >= half_max)[0]
+        mtt = None
+        if len(mtt_index) > 0:
+            start_mtt = x[mtt_index[0]]
+            end_mtt = x[mtt_index[-1]]
+            mtt = end_mtt - start_mtt
+            api["MTT"] = mtt
+        else:
+            api["MTT"] =  mtt
+
+        auc_interval = []
+        multi = [0.5,1.0,1.0,2.0]
+        if mtt and bai >= 0:
+            bat_time = x[bai]
+            for m in multi:
+                end_t = bat_time + mtt * m
+                end_index = np.searchsorted(x, end_t, side='right')
+                auc = np.trapezoid(y[bai:min(end_index,len(x)),x[bai:min(end_index,len(x))]])
+                auc_interval.append(auc)
+            api["AUC_interval"] = auc_interval
+        else:
+            api["AUC_interval"] = None
+
+        max_df = None
+        if bai >= 0 and p_h_i > bai:
+            dx = np.gradient(y[bai:p_h_i + 1])
+            max_df = np.max(np.abs(dx))
+            api["Max_Df"]  = max_df
+        else:
+            api["Max_Df"] = max_df
+
+        if bai >= 0:
+            api["BAT"] = x[bai]
+        else:
+            api["BAT"] = None
+
+        return api
+
+
+
+
+
+
+
 
 
 
