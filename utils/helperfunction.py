@@ -1,6 +1,8 @@
 import os
 import re
+from collections import deque
 import numpy as np
+
 
 
 def get_bases_id(name):
@@ -25,4 +27,56 @@ def BolusArrivalTime1D(y):
     if bat_index > 0:
         bat_index -= 1
     return bat_index
+
+def covariance(x,y):
+    mean_x = np.mean(x)
+    mean_y = np.mean(y)
+    var_x = np.mean((x- mean_x)**2)
+    var_y = np.mean((y-mean_y)**2)
+    cov_xy = np.mean((x- mean_x)*(y - mean_y)**2)
+    cov_matrix = np.array([[var_x, cov_xy],
+                           [cov_xy, var_y]])
+    print(cov_matrix)
+
+
+
+def connected_sets(mat, class_label=1, conn_type="4point"):
+    mat = np.array(mat)
+    x, y = mat.shape
+    visited = np.zeros_like(mat, dtype=bool)
+    connected_components = []
+    if conn_type == "4point":
+        neighbors = [(-1,0), (1,0), (0,-1), (0,1)]
+    elif conn_type == "8point":
+        neighbors = [(-1,0), (1,0), (0,-1), (0,1), (-1,-1), (-1,1), (1,-1), (1,1)]
+    else:
+        raise ValueError("conn_type must be '4point' or '8point'")
+    for i in range(x):
+        for j in range(y):
+            if mat[i, j] == class_label and not visited[i, j]:
+                q = deque([(i, j)])
+                visited[i, j] = True
+                component = [(i, j)]
+                while q:
+                    ci, cj = q.popleft()
+                    for di, dj in neighbors:
+                        ni, nj = ci + di, cj + dj
+                        if 0 <= ni < x and 0 <= nj < y:
+                            if mat[ni, nj] == class_label and not visited[ni, nj]:
+                                visited[ni, nj] = True
+                                q.append((ni, nj))
+                                component.append((ni, nj))
+
+                connected_components.append(component)
+
+    return connected_components
+
+
+
+
+
+
+
+
+
 
