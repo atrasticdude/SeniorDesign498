@@ -2,7 +2,8 @@ import os
 import re
 from collections import deque
 import numpy as np
-
+import cv2
+from tensorboard.compat.tensorflow_stub.dtypes import float32
 
 
 def get_bases_id(name):
@@ -38,38 +39,46 @@ def covariance(x,y):
                            [cov_xy, var_y]])
     print(cov_matrix)
 
+def connected_component(x,connect):
+    mat = np.array(x, dtype=float32)
+    num_lables, lables = cv2.connectedComponent(mat, connectivity=connect)
+    return num_lables, lables
 
 
-def connected_sets(mat, class_label=1, conn_type="4point"):
-    mat = np.array(mat)
-    x, y = mat.shape
-    visited = np.zeros_like(mat, dtype=bool)
-    connected_components = []
-    if conn_type == "4point":
-        neighbors = [(-1,0), (1,0), (0,-1), (0,1)]
-    elif conn_type == "8point":
-        neighbors = [(-1,0), (1,0), (0,-1), (0,1), (-1,-1), (-1,1), (1,-1), (1,1)]
-    else:
-        raise ValueError("conn_type must be '4point' or '8point'")
-    for i in range(x):
-        for j in range(y):
-            if mat[i, j] == class_label and not visited[i, j]:
-                q = deque([(i, j)])
-                visited[i, j] = True
-                component = [(i, j)]
-                while q:
-                    ci, cj = q.popleft()
-                    for di, dj in neighbors:
-                        ni, nj = ci + di, cj + dj
-                        if 0 <= ni < x and 0 <= nj < y:
-                            if mat[ni, nj] == class_label and not visited[ni, nj]:
-                                visited[ni, nj] = True
-                                q.append((ni, nj))
-                                component.append((ni, nj))
 
-                connected_components.append(component)
 
-    return connected_components
+
+
+# def connected_sets(mat, class_label=1, conn_type="4point"):
+#     mat = np.array(mat)
+#     x, y = mat.shape
+#     visited = np.zeros_like(mat, dtype=bool)
+#     connected_components = []
+#     if conn_type == "4point":
+#         neighbors = [(-1,0), (1,0), (0,-1), (0,1)]
+#     elif conn_type == "8point":
+#         neighbors = [(-1,0), (1,0), (0,-1), (0,1), (-1,-1), (-1,1), (1,-1), (1,1)]
+#     else:
+#         raise ValueError("conn_type must be '4point' or '8point'")
+#     for i in range(x):
+#         for j in range(y):
+#             if mat[i, j] == class_label and not visited[i, j]:
+#                 q = deque([(i, j)])
+#                 visited[i, j] = True
+#                 component = [(i, j)]
+#                 while q:
+#                     ci, cj = q.popleft()
+#                     for di, dj in neighbors:
+#                         ni, nj = ci + di, cj + dj
+#                         if 0 <= ni < x and 0 <= nj < y:
+#                             if mat[ni, nj] == class_label and not visited[ni, nj]:
+#                                 visited[ni, nj] = True
+#                                 q.append((ni, nj))
+#                                 component.append((ni, nj))
+#
+#                 connected_components.append(component)
+#
+#     return connected_components
 
 
 
