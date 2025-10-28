@@ -8,13 +8,9 @@ from utils.helperfunction import BolusArrivalTime1D
 
 
 class API(object):
-    def __init__(self,dsa,roi,x,y):
+    def __init__(self,dsa,fraction = 0.1):
         self.dsa = dsa
-        self.y = self.y_concentration(self.dsa,roi)
-        self.x = self.x_time(self.dsa)
-        self.x_inter = np.arange(0, np.max(self.x),0.1)
-        self.tdc = self.time_density_curve(self.x,self.y)
-        self.api = self.API_Parameters(x,y)
+        self._x_inter = np.arange(0, np.max(self.x), 0.1)
 
 
     @staticmethod
@@ -54,7 +50,10 @@ class API(object):
 
 
 
-    def API_Parameters(self,x,y):
+    def API_Parameters(self,y, x = None):
+        if x is None:
+            x = self._x_inter
+
         if len(x) == 0 or len(y) == 0:
             raise Exception("Concentration or Time vector is empty")
         api = {}
@@ -92,6 +91,7 @@ class API(object):
                 end_t = bat_time + mtt * m
                 end_index = np.searchsorted(x, end_t, side='right')
                 auc = np.trapezoid(y[bai:min(end_index,len(x)),x[bai:min(end_index,len(x))]])
+                # auc = np.trapezoid(y[bai:end_index], x[bai:end_index])
                 auc_interval.append(auc)
             api["AUC_interval"] = auc_interval
         else:
@@ -111,22 +111,6 @@ class API(object):
             api["BAT"] = None
 
         return api
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

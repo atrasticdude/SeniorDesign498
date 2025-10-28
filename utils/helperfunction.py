@@ -29,6 +29,9 @@ def BolusArrivalTime1D(y):
         bat_index -= 1
     return bat_index
 
+def getindices(x):
+    return np.transpose(np.nonzero(x))
+
 def covariance(x,y):
     mean_x = np.mean(x)
     mean_y = np.mean(y)
