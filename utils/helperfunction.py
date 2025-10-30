@@ -42,10 +42,6 @@ def covariance(x,y):
                            [cov_xy, var_y]])
     print(cov_matrix)
 
-def connected_component(x,connect):
-    mat = np.array(x, dtype=float32)
-    num_lables, lables = cv2.connectedComponent(mat, connectivity=connect)
-    return num_lables, lables
 
 
 

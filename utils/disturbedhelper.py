@@ -47,6 +47,14 @@ def otsu_algo(img):
     seg[img > k] = 255
     return seg, k
 
+def connected_component(x,connect):
+    mat = (x > 0).astype(np.uint8)
+    num_lables, lables = cv2.connectedComponents(mat, connectivity=connect)
+    return num_lables, lables
+
+
+
+
 
 
 
