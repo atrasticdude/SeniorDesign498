@@ -15,17 +15,17 @@ class getAPI(API):
         self.threshold_fraction = frac
         self.time = self.x_time(self.dsa)
         self.get_tdc_inl_avg = self.get_tdc_inl_avg()
-        self.tdc_inl_interp = self.time_density_curve(self.get_tdc_inl_avg)
+        self.inlet_tdc_inlet = self.time_density_curve(self.get_tdc_inl_avg)
         self.inlet_parameters = self.API_Parameters(self.tdc_inl_interp)
 
-    def process_mask(self,inlet_tdc_inter):
+    def process_mask(self):
 
         mask_y,mask_x = np.where(self.mask != 0)
         tdc_pixels = self.dsa[:,mask_y, mask_x]
 
         y_interp = np.apply_along_axis(lambda y: self.time_density_curve(self.time,y),0,tdc_pixels)
         max_change = np.max(y_interp, axis = 0)
-        max_inlet_change = np.max(inlet_tdc_inter)
+        max_inlet_change = np.max(self.inlet_tdc_inlet)
         max_change_factor = self.threshold_fraction * max_inlet_change
         y_valid= y_interp[:,max_change >= max_change_factor]
         valid_mask = max_change >= self.threshold_fraction * max_inlet_change
@@ -38,7 +38,7 @@ class getAPI(API):
 
 
         eps = 1e-8
-        inlet_corr = inlet_tdc_inter - np.mean(inlet_tdc_inter)
+        inlet_corr = self.inlet_tdc_inlet - np.mean(self.inlet_tdc_inter)
         y_valid_corr = y_valid - np.mean(y_valid, axis = 0)
         corr = np.array([
             np.max(
