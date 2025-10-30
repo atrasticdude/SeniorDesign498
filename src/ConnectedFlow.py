@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from scipy.ndimage import variance
 
-from utils.helperfunction import connected_component
+from utils.disturbedhelper import connected_component_binary
 import numpy as np
 
 
@@ -12,7 +12,7 @@ class connectedflow(object):
 
 
     def connected(self,mat,thereshold,api):
-        connected_com, num_class = connected_component(mat,8)
+        connected_com, num_class = connected_component_binary(mat,8)
         pics = []
 
         val, counts = np.unique(connected_com, return_counts=True)

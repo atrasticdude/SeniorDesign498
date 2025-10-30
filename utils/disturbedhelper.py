@@ -47,67 +47,11 @@ def otsu_algo(img):
     seg[img > k] = 255
     return seg, k
 
-def connected_component(x,connect):
+def connected_component_binary(x,connect):
     mat = (x > 0).astype(np.uint8)
-    num_lables, lables = cv2.connectedComponents(mat, connectivity=connect)
-    return num_lables, lables
+    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mat, connectivity=connect)
+    return num_labels, labels, stats, centroids
 
-
-
-
-
-
-
-
-
-
-
-
-
-# --- Load a DICOM image ---
-img_path = r"Z:\Users\Artin\coiled\raw_file\ANY_103_1"
-ds = pydicom.dcmread(img_path)
-arr = ds.pixel_array.astype(np.float32)
-
-# Pick one frame (if it's a time series or 3D)
-i = arr[9, :, :] if arr.ndim == 3 else arr
-
-# --- Apply global thresholding ---
-seg, T = otsu_algo(i)
-print(f"Threshold used: {T}")
-
-# --- Show results ---
-plt.figure(figsize=(10,5))
-plt.subplot(1,2,1)
-plt.title("Original")
-plt.imshow(i, cmap='gray')
-
-plt.subplot(1,2,2)
-plt.title(f"Segmented (T={T:.2f})")
-plt.imshow(seg, cmap='gray')
-plt.show()
-
-import cv2
-import matplotlib.pyplot as plt
-
-# Read grayscale image
-
-
-# Compute histogram
-hist = cv2.calcHist(i, [0], None, [256], [0, 256])
-
-# Show image and histogram
-plt.figure(figsize=(10,4))
-plt.subplot(1,2,1)
-plt.imshow(i, cmap='gray')
-plt.title("Original Image")
-
-plt.subplot(1,2,2)
-plt.plot(hist)
-plt.title("Histogram of Intensities")
-plt.xlabel("Intensity value (0–255)")
-plt.ylabel("Pixel count")
-plt.show()
 
 
 
