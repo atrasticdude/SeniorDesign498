@@ -111,38 +111,22 @@ class Load(object):
 
     def crop(self):
     
-        stage_num = {"PreTreatment": 0, "Treatment": 1, "PostTreatment": 2}
-        cropped = {}
-
-        for stage, IDs in self.imgmas_data.items():
-            num = stage_num.get(stage, None)
-            if num is None:
-                continue
-
-            for ID, value in IDs.items():
-                for img_array, mask in value:
-                    mask_bool = mask.astype(bool)
-
-                    if len(img_array) == 1:
-                        k = f"{ID}_{num}"
-                        img_cropped = img_array[0].copy()
-                        img_cropped[mask_bool] = 255
-                        cropped[k] = img_cropped
-
-                    elif len(img_array) == 2:
-                        k1 = f"{ID}_{num}_View1"
-                        k2 = f"{ID}_{num}_View2"
-                        img_cropped1 = img_array[0].copy()
-                        img_cropped2 = img_array[1].copy()
-                        img_cropped1[mask_bool] = 255
-                        img_cropped2[mask_bool] = 255
-                        cropped[k1] = img_cropped1
-                        cropped[k2] = img_cropped2
-
-                    else:
-                        raise ValueError(f"Unexpected number of views ({len(img_array)}) for {ID} at stage {stage}")
-
-        return cropped
+            cropped = {}
+        
+            for key, img_array in self.img_data.items():
+                if key not in self.mask_data:
+                    print(f" No mask found for {key}, skipping...")
+                    continue
+                mask = self.mask_data[key]
+                mask_bool = mask.astype(bool)
+                if img_array.ndim == 3:
+                    img_cropped = img_array.copy()
+                    img_cropped[:, mask_bool] = 255
+                else:
+                    raise ValueError(f"Unexpected image shape {img_array.shape} for key {key}")
+        
+                cropped[key] = img_cropped
+            return cropped
 
     def get_images(self):
         return self.img_data
