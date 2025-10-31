@@ -24,16 +24,16 @@ class Load(object):
             self.inlet_data = None
         if mask_path:
             self.mask_data = self.GetMasks(mask_path)
-        else:
-            self.mask_data = None
-        if self.img_data and self.inlet_data:
-            self.imginl_data = self.GetImgInlet()
-        else:
-            self.imginl_data = None
-        if self.img_data and self.mask_data:
-            self.imgmas_data = self.GetImgMask()
-        else:
-            self.imgmas_data = None
+        # else:
+        #     self.mask_data = None
+        # if self.img_data and self.inlet_data:
+        #     self.imginl_data = self.GetImgInlet()
+        # else:
+        #     self.imginl_data = None
+        # if self.img_data and self.mask_data:
+        #     self.imgmas_data = self.GetImgMask()
+        # else:
+        #     self.imgmas_data = None
 
 
 
@@ -108,32 +108,7 @@ class Load(object):
                         print(f"Failed to load {file_path}: {e}")
         return data
 
-    # def GetImgInlet(self):
-    #     data = defaultdict(lambda: defaultdict(list))
-    #     stages = ["PreTreatment", "Treatment", "PostTreatment"]
 
-    #     for stage in stages:
-    #         images_dict = self.img_data.get(stage, {})
-    #         inlets_dict = self.inlet_data.get(stage, {})
-
-    #         for key, inlet_list in inlets_dict.items():
-    #             if key in images_dict:
-    #                 for img_array, inlet_array in zip(images_dict[key], inlet_list):
-    #                     data[stage][key].append((img_array, inlet_array))
-    #     return data
-
-    # def GetImgMask(self):
-    #     data = defaultdict(lambda: defaultdict(list))
-    #     stages = ["PreTreatment", "Treatment", "PostTreatment"]
-
-    #     for stage in stages:
-    #         images_dict = self.img_data.get(stage, {})
-    #         masks_dict = self.mask_data.get(stage, {})
-    #         for key, mask_list in masks_dict.items():
-    #             if key in images_dict:
-    #                 for img_array, mask_array in zip(images_dict[key], mask_list):
-    #                     data[stage][key].append((img_array, mask_array))
-    #     return data
     def crop(self):
     
         stage_num = {"PreTreatment": 0, "Treatment": 1, "PostTreatment": 2}
@@ -175,10 +150,7 @@ class Load(object):
         return self.inlet_data
     def get_masks(self):
         return self.mask_data
-    # def get_inlet_image(self):
-    #     return self.imginl_data
-    # def get_mask_image(self):
-    #     return self.imgmas_data
+
 
 
 
