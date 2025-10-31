@@ -64,20 +64,26 @@ class Load(object):
     @staticmethod
     def GetImages(path):
         pre, treat, post = Separate.SepImages(path)
-        data = defaultdict(lambda: defaultdict(list))
-        stages = {"PreTreatment": pre, "Treatment": treat, "PostTreatment": post}
-
-        for stage_name, stage_dict in stages.items():
+        data = {}
+        stages = {"0": pre, "1": treat, "2": post}
+    
+        for stage_num, stage_dict in stages.items():
             for key, file_list in stage_dict.items():
                 if len(file_list) > 1:
                     file_list = sort_files_numerically(file_list)
-                for file_path in file_list:
+    
+                for idx, file_path in enumerate(file_list):
                     try:
                         ds = pydicom.dcmread(file_path)
-                        data[stage_name][key].append(ds.pixel_array.astype(np.float32))
+                        img_array = ds.pixel_array.astype(np.float32)
+                        name = f"{key}_{stage_num}"
+                        if len(file_list) > 1:
+                            name += f"_View{idx+1}"
+                        data[name] = img_array
                     except Exception as e:
                         print(f"Failed to read {file_path}: {e}")
         return data
+
 
     @staticmethod
     def GetMasks(path):
