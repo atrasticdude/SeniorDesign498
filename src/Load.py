@@ -24,17 +24,6 @@ class Load(object):
             self.inlet_data = None
         if mask_path:
             self.mask_data = self.GetMasks(mask_path)
-        # else:
-        #     self.mask_data = None
-        # if self.img_data and self.inlet_data:
-        #     self.imginl_data = self.GetImgInlet()
-        # else:
-        #     self.imginl_data = None
-        # if self.img_data and self.mask_data:
-        #     self.imgmas_data = self.GetImgMask()
-        # else:
-        #     self.imgmas_data = None
-
 
 
     @staticmethod
