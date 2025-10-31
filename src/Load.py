@@ -40,16 +40,22 @@ class Load(object):
     @staticmethod
     def GetInlets(path):
         pre, treat, post = Separate.SepInlet(path)
-        data = defaultdict(lambda: defaultdict(list))
-        stages = {"PreTreatment": pre, "Treatment": treat, "PostTreatment": post}
+        data = {}
+        stages = {"0": pre, "1": treat, "2": post}
+        
         for stage_name, stage_dict in stages.items():
             for key, file_list in stage_dict.items():
                 if len(file_list) > 1:
                     file_list = sort_files_numerically(file_list)
-                for file_path in file_list:
+        
+                for idx, file_path in enumerate(file_list):
                     try:
                         with Image.open(file_path) as img:
-                            data[stage_name][key].append(np.array(img, dtype=np.float32))
+                            arr = np.array(img, dtype=np.float32)
+                            name = f"{key}_{stage_name}"
+                            if len(file_list) > 1:
+                                name += f"_View{idx+1}"
+                            data[name] = arr
                     except Exception as e:
                         print(f"Failed to load {file_path}: {e}")
         return data
@@ -76,46 +82,52 @@ class Load(object):
     @staticmethod
     def GetMasks(path):
         pre, treat, post = Separate.SepMasks(path)
-        data = defaultdict(lambda: defaultdict(list))
-        stages = {"PreTreatment": pre, "Treatment": treat, "PostTreatment": post}
+        data = {}
+        stages = {"0": pre, "1": treat, "2": post}
+        
         for stage_name, stage_dict in stages.items():
             for key, file_list in stage_dict.items():
                 if len(file_list) > 1:
                     file_list = sort_files_numerically(file_list)
-                for file_path in file_list:
+        
+                for idx, file_path in enumerate(file_list):
                     try:
                         with Image.open(file_path) as img:
-                            data[stage_name][key].append(np.array(img, dtype=np.float32))
+                            arr = np.array(img, dtype=np.float32)
+                            name = f"{key}_{stage_name}"
+                            if len(file_list) > 1:
+                                name += f"_View{idx+1}"
+                            data[name] = arr
                     except Exception as e:
                         print(f"Failed to load {file_path}: {e}")
         return data
 
-    def GetImgInlet(self):
-        data = defaultdict(lambda: defaultdict(list))
-        stages = ["PreTreatment", "Treatment", "PostTreatment"]
+    # def GetImgInlet(self):
+    #     data = defaultdict(lambda: defaultdict(list))
+    #     stages = ["PreTreatment", "Treatment", "PostTreatment"]
 
-        for stage in stages:
-            images_dict = self.img_data.get(stage, {})
-            inlets_dict = self.inlet_data.get(stage, {})
+    #     for stage in stages:
+    #         images_dict = self.img_data.get(stage, {})
+    #         inlets_dict = self.inlet_data.get(stage, {})
 
-            for key, inlet_list in inlets_dict.items():
-                if key in images_dict:
-                    for img_array, inlet_array in zip(images_dict[key], inlet_list):
-                        data[stage][key].append((img_array, inlet_array))
-        return data
+    #         for key, inlet_list in inlets_dict.items():
+    #             if key in images_dict:
+    #                 for img_array, inlet_array in zip(images_dict[key], inlet_list):
+    #                     data[stage][key].append((img_array, inlet_array))
+    #     return data
 
-    def GetImgMask(self):
-        data = defaultdict(lambda: defaultdict(list))
-        stages = ["PreTreatment", "Treatment", "PostTreatment"]
+    # def GetImgMask(self):
+    #     data = defaultdict(lambda: defaultdict(list))
+    #     stages = ["PreTreatment", "Treatment", "PostTreatment"]
 
-        for stage in stages:
-            images_dict = self.img_data.get(stage, {})
-            masks_dict = self.mask_data.get(stage, {})
-            for key, mask_list in masks_dict.items():
-                if key in images_dict:
-                    for img_array, mask_array in zip(images_dict[key], mask_list):
-                        data[stage][key].append((img_array, mask_array))
-        return data
+    #     for stage in stages:
+    #         images_dict = self.img_data.get(stage, {})
+    #         masks_dict = self.mask_data.get(stage, {})
+    #         for key, mask_list in masks_dict.items():
+    #             if key in images_dict:
+    #                 for img_array, mask_array in zip(images_dict[key], mask_list):
+    #                     data[stage][key].append((img_array, mask_array))
+    #     return data
     def crop(self):
     
         stage_num = {"PreTreatment": 0, "Treatment": 1, "PostTreatment": 2}
@@ -157,10 +169,10 @@ class Load(object):
         return self.inlet_data
     def get_masks(self):
         return self.mask_data
-    def get_inlet_image(self):
-        return self.imginl_data
-    def get_mask_image(self):
-        return self.imgmas_data
+    # def get_inlet_image(self):
+    #     return self.imginl_data
+    # def get_mask_image(self):
+    #     return self.imgmas_data
 
 
 
