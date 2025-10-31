@@ -183,35 +183,6 @@ class growingRegion:
 
 
 
-import pydicom
-
-img_path = r"Z:\Users\Artin\coiled\raw_file\ANY_103_1"
-ds = pydicom.dcmread(img_path)
-arr = ds.pixel_array.astype(np.float32)
-
-# Rescale if necessary
-if 'RescaleSlope' in ds and 'RescaleIntercept' in ds:
-    arr = arr * ds.RescaleSlope + ds.RescaleIntercept
-
-# Pick a single frame if 3D
-i = arr[9, :, :] if arr.ndim == 3 else arr
-
-# Initialize and grow regions
-a = growingRegion(i, 2)
-seg = a.growing(threshold=None, show_debug=True)  # threshold=None uses automatic ~10% of intensity range
-
-# Display original vs segmented
-plt.figure(figsize=(10,5))
-plt.subplot(1,2,1)
-plt.title("Original")
-plt.imshow(i, cmap='gray')
-plt.axis('off')
-
-plt.subplot(1,2,2)
-plt.title("Segmented")
-plt.imshow(seg, cmap='nipy_spectral')
-plt.axis('off')
-plt.show()
 
 
 
