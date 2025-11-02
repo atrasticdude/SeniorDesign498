@@ -1,10 +1,8 @@
-from cffi.model import qualify
-from scipy.signal import correlate
 
+from scipy.signal import correlate
 from utils.API import API
 import numpy as np
-from src.Load import Load
-from utils.helperfunction import getindices
+
 
 
 class getAPI(API):
@@ -14,9 +12,13 @@ class getAPI(API):
         self.inlet = inlet
         self.threshold_fraction = frac
         self.time = self.x_time(self.dsa)
-        self.get_tdc_inl_avg = self.get_tdc_inl_avg()
-        self.inlet_tdc_inlet = self.time_density_curve(self.get_tdc_inl_avg)
-        self.inlet_parameters = self.API_Parameters(self.tdc_inl_interp)
+        self.inlet_tdc_average = self.get_tdc_inl_avg()
+        self.inlet_tdc_inlet = self.time_density_curve(self.inlet_tdc_average)
+        self.inlet_parameters = self.API_Parameters(self.inlet_tdc_inlet)
+        self.results_mean, self.results_std, self.qualifying_pixels, self.qualifying_indices, self.tdc_average = self.process_mask()
+
+
+
 
     def process_mask(self):
 
@@ -34,11 +36,11 @@ class getAPI(API):
 
         if qualifying_pixels == 0:
             print("No qualifying pixels after threshold")
-            return None
+            return (np.nan,np.nan,0,[],None)
 
 
         eps = 1e-8
-        inlet_corr = self.inlet_tdc_inlet - np.mean(self.inlet_tdc_inter)
+        inlet_corr = self.inlet_tdc_inlet - np.mean(self.inlet_tdc_inlet)
         y_valid_corr = y_valid - np.mean(y_valid, axis = 0)
         corr = np.array([
             np.max(
@@ -49,9 +51,7 @@ class getAPI(API):
         ])
 
         parameters = np.array([self.API_Parameters(y_valid[:, i]) for i in range(qualifying_pixels)])
-
         parameters = np.column_stack((corr, parameters))
-
         tdc_average = np.mean(y_valid, axis=1)
         results_mean = np.nanmean(parameters, axis=0)
         results_std = np.nanstd(parameters, axis=0)
@@ -61,7 +61,6 @@ class getAPI(API):
     def get_tdc_inl_avg(self):
         tdc_inlet_average = self.dsa[:, self.inlet.astype(bool)].mean(axis=1)
         return tdc_inlet_average
-
 
 
 

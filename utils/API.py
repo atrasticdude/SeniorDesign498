@@ -1,7 +1,4 @@
 import numpy as np
-from scipy.differentiate import derivative
-from scipy.interpolate import UnivariateSpline
-import matplotlib.pyplot as plt
 from scipy.signal import medfilt
 from scipy import interpolate
 from utils.helperfunction import BolusArrivalTime1D
@@ -10,6 +7,7 @@ from utils.helperfunction import BolusArrivalTime1D
 class API(object):
     def __init__(self,dsa,fraction = 0.1):
         self.dsa = dsa
+        self.x =self.x_time(dsa)
         self._x_inter = np.arange(0, np.max(self.x), 0.1)
 
 
@@ -69,7 +67,7 @@ class API(object):
             ttp = None
             api["TimeToPeak"] = ttp
 
-        AUC_full = np.trapzoid(y,x)
+        AUC_full = np.trapezoid(y, x)
         api["AUC"] = AUC_full
 
         half_max = p_h / 2.2
