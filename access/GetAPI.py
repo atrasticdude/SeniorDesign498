@@ -6,14 +6,14 @@ import numpy as np
 
 
 class getAPI(API):
-    def __init__(self,dsa,mask,inlet,frac):
+    def __init__(self,dsa,mask,inlet,frac = 0.1, frame_rate = 10):
         super().__init__(dsa)
-        self.mask = mask
-        self.inlet = inlet
+        self.mask = mask.astype(bool)
+        self.inlet = inlet.astype(bool)
         self.threshold_fraction = frac
         self.time = self.x_time(self.dsa)
         self.inlet_tdc_average = self.get_tdc_inl_avg()
-        self.inlet_tdc_inlet = self.time_density_curve(self.inlet_tdc_average)
+        self.inlet_tdc_inlet = self.time_density_curve(self.time,self.inlet_tdc_average)
         self.inlet_parameters = self.API_Parameters(self.inlet_tdc_inlet)
         self.results_mean, self.results_std, self.qualifying_pixels, self.qualifying_indices, self.tdc_average = self.process_mask()
 
@@ -50,13 +50,34 @@ class getAPI(API):
             for i in range(y_valid_corr.shape[1])
         ])
 
-        parameters = np.array([self.API_Parameters(y_valid[:, i]) for i in range(qualifying_pixels)])
+        # parameters = np.array([self.API_Parameters(y_valid[:, i]) for i in range(qualifying_pixels)])
+        # parameters = np.column_stack((corr, parameters))
+        # tdc_average = np.mean(y_valid, axis=1)
+        # results_mean = np.nanmean(parameters, axis=0)
+        # results_std = np.nanstd(parameters, axis=0)
+        #
+        # Compute API parameters for each pixel
+        parameters_list = []
+        for i in range(qualifying_pixels):
+            api_values = self.API_Parameters(y_valid[:, i])
+            numeric_values = []
+            for key in ["PH", "TTP", "AUC", "MTT", "Max_Df", "BAT"]:
+                val = api_values.get(key)
+                if val is None:
+                    val = np.nan
+                numeric_values.append(val)
+            parameters_list.append(numeric_values)
+
+        parameters = np.array(parameters_list)
         parameters = np.column_stack((corr, parameters))
+
         tdc_average = np.mean(y_valid, axis=1)
         results_mean = np.nanmean(parameters, axis=0)
         results_std = np.nanstd(parameters, axis=0)
 
         return results_mean, results_std, qualifying_pixels, qualifying_indices, tdc_average
+
+
 
     def get_tdc_inl_avg(self):
         tdc_inlet_average = self.dsa[:, self.inlet.astype(bool)].mean(axis=1)

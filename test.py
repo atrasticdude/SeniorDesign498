@@ -101,3 +101,52 @@ for i in range(num_frames):
     plt.title(f"Frame {i}")
     plt.axis('off')
     plt.show()
+
+
+#test get_API
+
+import pydicom
+import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
+from access.GetAPI import getAPI
+
+
+# --- Paths ---
+img_path = r"Z:\Users\Artin\coiled\raw_file\ANY_103_0"
+mask_path = r"Z:\Users\Artin\coiled\aneurysms\ANY_103_0.tif"
+inlet_path = r"Z:\Users\Artin\coiled\inlets\ANY_103_0_inl.tif"
+
+# --- Load DICOM ---
+ds = pydicom.dcmread(img_path)
+arr = ds.pixel_array.astype(np.float32)
+
+# Make sure arr is 3D: (frames, height, width)
+if arr.ndim == 2:
+    arr = arr[None, :, :]  # add a frames dimension
+
+# --- Load mask and inlet ---
+mask_img = Image.open(mask_path).convert("L")  # grayscale
+mask = np.array(mask_img) > 0  # binary mask
+
+inlet_img = Image.open(inlet_path).convert("L")
+inlet = np.array(inlet_img) > 0  # boolean inlet
+
+# --- Threshold fraction ---
+frac = 0.1
+
+# --- Run getAPI ---
+api_obj = getAPI(dsa=arr, mask=mask, inlet=inlet, frac=frac)
+
+# --- Access results ---
+print("Mean parameters:", api_obj.results_mean)
+print("Std parameters:", api_obj.results_std)
+print("Number of qualifying pixels:", api_obj.qualifying_pixels)
+print("Qualifying indices:", api_obj.qualifying_indices)
+
+# --- Plot average TDC ---
+plt.plot(api_obj._x_inter, api_obj.tdc_average)
+plt.xlabel("Time (s)")
+plt.ylabel("Average Concentration")
+plt.title("Average TDC")
+plt.show()

@@ -191,7 +191,7 @@ class Load(object):
                         print(f"Failed to read {file_path}: {e}")
         return sizes
 
-    def okm_grade(self):
+    # def okm_grade(self):
 
 
 

@@ -5,9 +5,9 @@ from utils.helperfunction import BolusArrivalTime1D
 
 
 class API(object):
-    def __init__(self,dsa,fraction = 0.1):
+    def __init__(self,dsa,fraction = 0.1, frame_rate = 10):
         self.dsa = dsa
-        self.x =self.x_time(dsa)
+        self.x =self.x_time(dsa, frame_rate)
         self._x_inter = np.arange(0, np.max(self.x), 0.1)
 
 
@@ -22,19 +22,24 @@ class API(object):
         return tdc
 
     @staticmethod
-    def x_time(dsa):
-        try:
+    def x_time(dsa, frame_rate = 10):
+        # try:
+        #
+        #     delta_t = np.asarray(dsa.FrameTimeVector, dtype=np.float32) / 1000
+        #     if delta_t.size > 1 and delta_t[1] < 0.05:
+        #         delta_t[1] = max(delta_t[1], 0.05)
+        # except AttributeError:
+        #     n_frames = getattr(dsa, "NumberOfFrames", dsa[0])
+        #     frame_rate = getattr(dsa, "RecommendedDisplayFrameRate", 10)
+        #     delta_t = np.full(n_frames, 1 / frame_rate, dtype=np.float32)
+        #     delta_t[0] = 0.0
+        # time_vector = np.cumsum(delta_t)
+        # return time_vector
+        n_frames = dsa.shape[0]
+        delta_t = np.full(n_frames, 1 / frame_rate, dtype=np.float32)
+        delta_t[0] = 0.0
+        return np.cumsum(delta_t)
 
-            delta_t = np.asarray(dsa.FrameTimeVector, dtype=np.float32) / 1000
-            if delta_t.size > 1 and delta_t[1] < 0.05:
-                delta_t[1] = max(delta_t[1], 0.05)
-        except AttributeError:
-            n_frames = dsa.NumberOfFrames
-            frame_rate = getattr(dsa, "RecommendedDisplayFrameRate", 10)
-            delta_t = np.full(n_frames, 1 / frame_rate, dtype=np.float32)
-            delta_t[0] = 0.0
-        time_vector = np.cumsum(delta_t)
-        return time_vector
 
     def time_density_curve(self,x,y):
         tdc_filtered = medfilt(y.astype(np.float32), kernel_size=1)
@@ -42,7 +47,7 @@ class API(object):
         tdc_inv = baseline - tdc_filtered
         tdc_inv[tdc_inv < 0] = 0
         f = interpolate.interp1d(x, tdc_filtered, kind='cubic', fill_value='extrapolate')
-        y_interp = f(self.x_inter)
+        y_interp = f(self._x_inter)
         return y_interp
 
 
@@ -88,8 +93,9 @@ class API(object):
             for m in multi:
                 end_t = bat_time + mtt * m
                 end_index = np.searchsorted(x, end_t, side='right')
-                auc = np.trapezoid(y[bai:min(end_index,len(x)),x[bai:min(end_index,len(x))]])
-                # auc = np.trapezoid(y[bai:end_index], x[bai:end_index])
+                end_index = min(end_index, len(x))
+                auc = np.trapezoid(y[bai:end_index], x[bai:end_index])
+                # auc = np.trapezoid(y[bai:min(end_index,len(x)),x[bai:min(end_index,len(x))]])
                 auc_interval.append(auc)
             api["AUC_interval"] = auc_interval
         else:
