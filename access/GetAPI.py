@@ -6,16 +6,17 @@ import numpy as np
 
 
 class getAPI(API):
-    def __init__(self,dsa,mask,inlet,frac = 0.1, frame_rate = 10):
-        super().__init__(dsa)
+    def __init__(self,dsa,mask,inlet,dsa_temp,frac = 0.1, show_mask_stats = False):
+        super().__init__(dsa,dsa_temp)
         self.mask = mask.astype(bool)
         self.inlet = inlet.astype(bool)
         self.threshold_fraction = frac
-        self.time = self.x_time(self.dsa)
+        self.time = self.x_time(dsa_temp,dsa.shape[0])
         self.inlet_tdc_average = self.get_tdc_inl_avg()
-        self.inlet_tdc_inlet = self.time_density_curve(self.time,self.inlet_tdc_average)
+        self.inlet_tdc_inlet = self.time_density_curve(self._x,self.inlet_tdc_average)
         self.inlet_parameters = self.API_Parameters(self.inlet_tdc_inlet)
-        self.results_mean, self.results_std, self.qualifying_pixels, self.qualifying_indices, self.tdc_average = self.process_mask()
+        if show_mask_stats:
+           self.results_mean, self.results_std, self.qualifying_pixels, self.qualifying_indices, self.tdc_average = self.process_mask()
 
 
 
@@ -25,7 +26,7 @@ class getAPI(API):
         mask_y,mask_x = np.where(self.mask != 0)
         tdc_pixels = self.dsa[:,mask_y, mask_x]
 
-        y_interp = np.apply_along_axis(lambda y: self.time_density_curve(self.time,y),0,tdc_pixels)
+        y_interp = np.apply_along_axis(lambda y: self.time_density_curve(self._x,y),0,tdc_pixels)
         max_change = np.max(y_interp, axis = 0)
         max_inlet_change = np.max(self.inlet_tdc_inlet)
         max_change_factor = self.threshold_fraction * max_inlet_change
@@ -82,7 +83,8 @@ class getAPI(API):
     def get_tdc_inl_avg(self):
         tdc_inlet_average = self.dsa[:, self.inlet.astype(bool)].mean(axis=1)
         return tdc_inlet_average
-
+    def get_inlet_API(self):
+        return self.inlet_parameters
 
 
 
