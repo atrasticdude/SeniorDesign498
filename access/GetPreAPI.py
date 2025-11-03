@@ -84,9 +84,7 @@ if __name__ == "__main__":
                 for i, auc_val in enumerate(auc_values):
                     df.loc[case, auc_intervals[i]] = auc_val
 
-    output_csv = "inlet_results_pre.csv"
-    df.to_csv(output_csv, index=True)
-    print(f"CSV file '{output_csv}' created successfully!")
+
 
 
 
