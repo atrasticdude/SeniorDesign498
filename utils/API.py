@@ -15,7 +15,7 @@ class API(object):
     def x_time(dsa_temp,num_frmaes):
         try:
 
-            delta_t = np.asarray(dsa_temp.FrameTimeVector, dtype=np.float32) / 1000
+            delta_t = np.array(dsa_temp.FrameTimeVector, dtype=np.float32).flatten() / 1000
             if delta_t.size > 1 and delta_t[1] < 0.3:
                 delta_t[1] = max(delta_t[1], 0.3)
         except AttributeError:
@@ -36,6 +36,11 @@ class API(object):
         baseline = tdc_filtered[0] * np.ones_like(tdc_filtered)
         tdc_inv = baseline - tdc_filtered
         tdc_inv[tdc_inv < 0] = 0
+        if len(x) != len(tdc_inv):
+            min_len = min(len(x), len(tdc_inv))
+            x = x[:min_len]
+            tdc_inv = tdc_inv[:min_len]
+            print(f"Warning: trimmed x and tdc_inv to length {min_len}")
         f = interpolate.interp1d(x, tdc_inv, kind='cubic', fill_value='extrapolate')
         y_interp = f(self._x_inter)
         return y_interp

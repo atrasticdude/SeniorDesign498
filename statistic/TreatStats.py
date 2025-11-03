@@ -1,8 +1,3 @@
-from pathlib import Path
-import pandas as pd
-
-
-
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -13,7 +8,8 @@ def load_data(directory, file):
     return df
 
 # Load and clean data
-data = load_data("Data", "normalized_file_Inlet_Pre_Parameter.csv")
+data = load_data("Data", "normalized_file_Inlet_Treat_Parameter.csv")
+# data.rename(columns={'Unnamed: 0': 'ID'}, inplace=True)
 data.drop("ID", axis=1, inplace=True)
 
 # Display info
@@ -24,10 +20,3 @@ data.hist(figsize=(12, 10), bins=20, edgecolor='black')
 plt.suptitle("Histograms of All Numeric Columns", fontsize=16)
 plt.tight_layout()
 plt.show()
-
-
-
-
-
-
-
