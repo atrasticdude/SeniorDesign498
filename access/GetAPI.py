@@ -3,10 +3,11 @@ from scipy.signal import correlate
 from utils.API import API
 import numpy as np
 
+from utils.helperfunction import okm_grade_from_fill
 
 
 class getAPI(API):
-    def __init__(self,dsa, inlet,dsa_temp,frac = 0.1, mask = None, show_mask_stats = False):
+    def __init__(self,dsa, inlet,dsa_temp,frac = 0.1, mask = None, show_mask_stats = False, show_okelly_scale = False):
         super().__init__(dsa,dsa_temp)
         if mask is not None:
             self.mask = mask.astype(bool)
@@ -17,7 +18,10 @@ class getAPI(API):
         self.inlet_tdc_inlet = self.time_density_curve(self._x,self.inlet_tdc_average)
         self.inlet_parameters = self.API_Parameters(self.inlet_tdc_inlet)
         if show_mask_stats:
-           self.results_mean, self.results_std, self.qualifying_pixels, self.qualifying_indices, self.tdc_average = self.process_mask()
+            self.results_mean, self.results_std, self.qualifying_pixels, self.qualifying_indices, self.tdc_average = self.process_mask()
+        if show_okelly_scale:
+            self.scale = self.okelly_marotta_scale()
+
 
 
 
@@ -79,6 +83,23 @@ class getAPI(API):
 
         return results_mean, results_std, qualifying_pixels, qualifying_indices, tdc_average
 
+    def okelly_marotta_scale(self):
+        mask_y, mask_x = np.where(self.mask != 0)
+        if len(mask_y) == 0:
+            print("Warning: Empty aneurysm mask.")
+            return np.nan
+        tdc_pixels = self.dsa[:, mask_y, mask_x]
+        y_interp = np.apply_along_axis(lambda y: self.time_density_curve(self._x, y), 0, tdc_pixels)
+        max_change = np.max(y_interp, axis=0)
+        max_inlet_change = np.max(self.inlet_tdc_inlet)
+        max_change_factor = self.threshold_fraction * max_inlet_change
+        y_valid = y_interp[:, max_change >= max_change_factor]
+        qualifying_pixels = y_valid.shape[1]
+
+        total_mask_pixels = np.count_nonzero(self.mask)
+        fill_percent = (qualifying_pixels / total_mask_pixels) * 100 if total_mask_pixels > 0 else np.nan
+        scale = okm_grade_from_fill(fill_percent)
+        return scale
 
 
     def get_tdc_inl_avg(self):
@@ -86,6 +107,8 @@ class getAPI(API):
         return tdc_inlet_average
     def get_inlet_API(self):
         return self.inlet_parameters
+    def get_okm_scale(self):
+        return self.scale
 
 
 

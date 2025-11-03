@@ -32,6 +32,18 @@ def BolusArrivalTime1D(y):
 def getindices(x):
     return np.transpose(np.nonzero(x))
 
+def okm_grade_from_fill(fill_percent):
+    if np.isnan(fill_percent):
+        return "N/A"
+    elif fill_percent > 95:
+        return "A"
+    elif fill_percent > 50:
+        return "B"
+    elif fill_percent > 0:
+        return "C"
+    else:
+        return "D"
+
 def covariance(x,y):
     mean_x = np.mean(x)
     mean_y = np.mean(y)
