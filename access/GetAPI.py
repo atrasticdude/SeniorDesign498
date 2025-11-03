@@ -6,9 +6,10 @@ import numpy as np
 
 
 class getAPI(API):
-    def __init__(self,dsa,mask,inlet,dsa_temp,frac = 0.1, show_mask_stats = False):
+    def __init__(self,dsa, inlet,dsa_temp,frac = 0.1, mask = None, show_mask_stats = False):
         super().__init__(dsa,dsa_temp)
-        self.mask = mask.astype(bool)
+        if mask is not None:
+            self.mask = mask.astype(bool)
         self.inlet = inlet.astype(bool)
         self.threshold_fraction = frac
         self.time = self.x_time(dsa_temp,dsa.shape[0])

@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 from access.GetAPI import getAPI
 
 # --- Paths ---
-img_path = r"Z:\Users\Artin\coiled\raw_file\ANY_106_0"
-mask_path = r"Z:\Users\Artin\coiled\aneurysms\ANY_106_0.tif"
-inlet_path = r"Z:\Users\Artin\coiled\inlets\ANY_106_0_inl.tif"
+img_path = r"Z:\Users\Artin\coiled\raw_file\ANY_391_0"
+mask_path = r"Z:\Users\Artin\coiled\aneurysms\ANY_391_0.tif"
+inlet_path = r"Z:\Users\Artin\coiled\inlets\ANY_391_0_inl.tif"
 
 # Extract case number from filename
-case_number = "ANY_106_0"
+case_number = "ANY_116_0"
 
 # --- Load DICOM ---
 ds = pydicom.dcmread(img_path)
@@ -20,14 +20,14 @@ if arr.ndim == 2:
     arr = arr[None, :, :]  # make 3D if needed
 
 # --- Load mask and inlet ---
-mask_img = Image.open(mask_path).convert("L")
-mask = np.array(mask_img) > 0
+# mask_img = Image.open(mask_path).convert("L")
+# mask = np.array(mask_img) > 0
 
 inlet_img = Image.open(inlet_path).convert("L")
 inlet = np.array(inlet_img) > 0
 
 # --- Initialize getAPI ---
-api_obj = getAPI(dsa=arr, mask=mask, inlet=inlet, dsa_temp=ds, frac=0.1, show_mask_stats=False)
+api_obj = getAPI(dsa=arr, inlet=inlet, dsa_temp=ds, frac=0.1, show_mask_stats=False)
 
 # --- Get inlet TDC and time ---
 tdc_inlet = api_obj.inlet_tdc_inlet

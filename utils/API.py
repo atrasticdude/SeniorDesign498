@@ -77,7 +77,7 @@ class API(object):
             api["MTT"] =  mtt
 
         auc_interval = []
-        multi = [0.5,1.0,1.0,2.0]
+        multi = [0.5,1.0,1.5,2.0]
         if mtt and bai >= 0:
             bat_time = x[bai]
             for m in multi:
