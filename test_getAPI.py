@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from access.GetAPI import getAPI
 
 # --- Paths ---
-img_path = r"Z:\Users\Artin\coiled\raw_file\ANY_391_0"
-mask_path = r"Z:\Users\Artin\coiled\aneurysms\ANY_391_0.tif"
-inlet_path = r"Z:\Users\Artin\coiled\inlets\ANY_391_0_inl.tif"
+img_path = r"Z:\Users\Artin\coiled\raw_file\ANY_106_1"
+mask_path = r"Z:\Users\Artin\coiled\aneurysms\ANY_106_1.tif"
+inlet_path = r"Z:\Users\Artin\coiled\inlets\ANY_106_1_inl.tif"
 
 # Extract case number from filename
 case_number = "ANY_116_0"
