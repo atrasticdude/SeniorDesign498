@@ -150,3 +150,48 @@ plt.xlabel("Time (s)")
 plt.ylabel("Average Concentration")
 plt.title("Average TDC")
 plt.show()
+
+import numpy as np
+
+# Example data: rows = time steps, columns = connected components
+# Each value is the contrast at that time for that component
+contrast_data = np.array([
+    [0.1, 0.5, 0.8],
+    [0.2, 0.5, 0.7],
+    [0.3, 0.6, 0.9],
+    [0.1, 0.7, 0.85]
+])
+
+# Step 1: Discretize contrast into bins (0-1 range, 3 bins: low, medium, high)
+bins = [0.0, 0.33, 0.66, 1.0]  # 3 bins
+discrete_data = np.digitize(contrast_data, bins) - 1  # subtract 1 to make 0-indexed
+
+# Step 2: Compute transition matrix for each component
+num_states = len(bins) - 1
+num_components = contrast_data.shape[1]
+
+transition_matrices = []
+
+for comp in range(num_components):
+    # Initialize count matrix
+    counts = np.zeros((num_states, num_states))
+
+    # Count transitions
+    for t in range(discrete_data.shape[0] - 1):
+        current_state = discrete_data[t, comp]
+        next_state = discrete_data[t + 1, comp]
+        counts[current_state, next_state] += 1
+
+    # Normalize to get probabilities
+    row_sums = counts.sum(axis=1, keepdims=True)
+    # Avoid division by zero
+    probs = np.divide(counts, row_sums, out=np.zeros_like(counts), where=row_sums != 0)
+
+    transition_matrices.append(probs)
+
+# Print transition matrices
+for i, matrix in enumerate(transition_matrices):
+    print(f"Transition matrix for component {i}:")
+    print(matrix)
+    print()
+
