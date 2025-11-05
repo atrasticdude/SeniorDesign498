@@ -109,7 +109,7 @@ import pydicom
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
-from access.GetAPI import getAPI
+from src.APIMaps.GetAPI import getAPI
 
 
 # --- Paths ---

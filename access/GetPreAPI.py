@@ -1,9 +1,7 @@
-from pathlib import Path
-
 import numpy as np
 import pydicom
 from PIL import Image
-from GetAPI import getAPI
+from src.APIMaps.GetAPI import getAPI
 from src.Separation import Separate
 from utils.helperfunction import sort_files_numerically
 import pandas as pd

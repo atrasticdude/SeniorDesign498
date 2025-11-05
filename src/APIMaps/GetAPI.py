@@ -1,6 +1,6 @@
 
 from scipy.signal import correlate
-from utils.API import API
+from src.APIMaps.API import API
 import numpy as np
 
 from utils.helperfunction import okm_grade_from_fill

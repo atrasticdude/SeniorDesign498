@@ -2,7 +2,7 @@ import pydicom
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
-from access.GetAPI import getAPI
+from src.APIMaps.GetAPI import getAPI
 
 # --- Paths ---
 img_path = r"Z:\Users\Artin\coiled\raw_file\ANY_136_1"
