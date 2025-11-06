@@ -4,13 +4,21 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 def global_thresholding(img, threshold=None):
+    # img_norm = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+    # if threshold is None:
+    #     T, seg = cv2.threshold(img_norm, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    # else:
+    #     T, seg = cv2.threshold(img_norm, threshold, 255, cv2.THRESH_BINARY)
     img_norm = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
     if threshold is None:
         T, seg = cv2.threshold(img_norm, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     else:
         T, seg = cv2.threshold(img_norm, threshold, 255, cv2.THRESH_BINARY)
 
-    return seg, T
+    return T, seg
+
+
+
 def otsu_algo(img):
     img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
