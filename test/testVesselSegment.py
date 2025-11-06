@@ -3,13 +3,15 @@ import pydicom
 import tifffile
 import matplotlib.pyplot as plt
 from skimage.morphology import binary_erosion
+
+from src.Disturbed.VesselSegment import VesselSegment
 from utils.disturbedhelper import global_thresholding
 
 # ---- VesselSegment class here ----
 # Make sure your fixed VesselSegment class is in the same script or imported
 
 # ---- Load DICOM ----
-dcm = pydicom.dcmread(r"Z:\Users\Artin\coiled\raw_file\ANY_131_1")
+dcm = pydicom.dcmread(r"Z:\Users\Artin\coiled\raw_file\ANY_340_1")
 # Convert pixel data to NumPy array
 dsa = dcm.pixel_array  # shape: (frames, height, width) or (height, width) if single frame
 
@@ -18,10 +20,10 @@ if dsa.ndim == 2:
     dsa = np.expand_dims(dsa, axis=0)
 
 # ---- Load mask TIFF ----
-mask = tifffile.imread(r"Z:\Users\Artin\coiled\aneurysms\ANY_131_1.tif").astype(bool)
+mask = tifffile.imread(r"Z:\Users\Artin\coiled\aneurysms\ANY_340_1.tif").astype(bool)
 
 # ---- Initialize VesselSegment ----
-frame_num = 6    # choose frame to process
+frame_num = 7   # choose frame to process
 padding = 30     # padding around mask for focused region
 
 import matplotlib.pyplot as plt
