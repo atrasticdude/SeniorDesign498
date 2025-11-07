@@ -1,4 +1,4 @@
-macro "Save Mask as TIF [F5]" {
+macro "Save Mask as TIF [A]" {
     // ===== CONFIGURE THIS =====
     outputDir = "Z:\\Users\\Artin\\coiled\\masks_both_view\\";  // Windows path, include trailing slash
     // ==========================
