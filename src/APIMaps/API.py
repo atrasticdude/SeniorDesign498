@@ -67,6 +67,13 @@ class API(object):
             ttp = None
             api["TimeToPeak"] = ttp
 
+        if hasattr(self,"_x"):
+            if ttp is not None:
+                ph_frame  = int(np.argmin(np.abs(self._x - ttp)))
+                api["PH_Frame"] = ph_frame
+            else:
+                api["PH_Frame"] = None
+
         AUC_full = np.trapezoid(y, x)
         api["AUC"] = AUC_full
 

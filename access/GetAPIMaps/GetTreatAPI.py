@@ -56,7 +56,7 @@ if __name__ == "__main__":
     img_data, path_dict = GetImages(img_path)
     inlet_data = GetInlets(inlet_path)
 
-    param_keys = ["PH", "TTP", "AUC", "MTT", "Max_Df", "BAT"]
+    param_keys = ["PH", "TTP", "AUC", "MTT", "Max_Df", "BAT","PH_Frame"]
     auc_intervals = ["AUC0.5", "AUC1", "AUC1.5", "AUC2.0"]
     header = param_keys + auc_intervals
 
@@ -82,4 +82,4 @@ if __name__ == "__main__":
                 for i, auc_val in enumerate(auc_values):
                     df.loc[case, auc_intervals[i]] = auc_val
 
-    df.to_csv('Inlet_Treat_Parameter.csv', index=True)
+    df.to_csv('Inlet_Treat_Parameter_wphframe.csv', index=True)
