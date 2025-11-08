@@ -53,7 +53,7 @@ def otsu_algo(img):
     k = np.argmax(score)
     seg = np.zeros_like(img, dtype=np.uint8)
     seg[img > k] = 255
-    return seg, k
+    return seg, k,np.max(score)
 
 def connected_component_binary(x,connect):
     mat = (x > 0).astype(np.uint8)

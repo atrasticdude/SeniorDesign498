@@ -4,16 +4,19 @@ from scipy import ndimage
 from scipy.ndimage import distance_transform_edt
 from skimage.morphology import binary_erosion
 
-from utils.disturbedhelper import global_thresholding
+from utils.disturbedhelper import global_thresholding, otsu_algo
 
 
 class VesselSegment(object):
-    def __init__(self,dsa,mask,frame_num, padding = 20):
+    def __init__(self,dsa,mask,frame_num, padding = None):
         self.dsa = dsa
         self.mask = mask.astype(bool)
         self.coords = self.find_mask_boundaries()
-        self.f_mask = self.zoom_mask(self.dsa[frame_num,:,:], self.coords,padding)
-        self.segmented = self.add_segment_mask(frame_num)
+        if padding is None:
+            self.segmented, self.f_mask = self.add_sgement_mask_bestpadding(frame_num,self.coords)
+        else:
+            self.f_mask = self.zoom_mask(self.dsa[frame_num,:,:], self.coords,padding)
+            self.segmented = self.add_segment_mask(frame_num)
         self.grow_coordinates = self.find_valid_coords_distance(self.coords)
 
 
@@ -59,7 +62,7 @@ class VesselSegment(object):
         frame = self.dsa[frame_num, :, :].copy()
         frame[self.mask] = 0
         frame[~self.f_mask] = frame.max() + 1
-        _, seg = global_thresholding(frame)
+        T, seg = global_thresholding(frame)
         return seg.astype(bool)
     # def add_segment_mask(self, frame_num):
     #     frame = self.dsa[frame_num, :, :]
@@ -76,9 +79,11 @@ class VesselSegment(object):
         sorted_hist_indices = np.argsort(hist)[::-1]
         sorted_counts = hist[sorted_hist_indices]
         sorted_bins = bins[sorted_hist_indices]
+        threshold = min(sorted_bins[0],sorted_bins[1])
         for k in range(3,len(sorted_bins)-1):
             if np.abs(sorted_bins[k+1] - sorted_bins[k]) > difference:
                 threshold = min(sorted_bins[k+1],sorted_bins[k])
+                break
         _, seg = global_thresholding(frame,threshold=threshold)
         seg = seg.astype(bool)
         mask_coords = set(zip(*np.where(self.mask)))
@@ -89,6 +94,34 @@ class VesselSegment(object):
             return np.array(y_missing, dtype=int), np.array(x_missing, dtype=int)
         else:
             return np.array([], dtype=int), np.array([], dtype=int)
+
+    def add_sgement_mask_bestpadding(self,frame_num,coords):
+        padding = [10,20,30,40,50]
+        frame = self.dsa[frame_num,:,:]
+        best_mask = None
+        best_score = -np.inf
+        best_seg = None
+        for index,p in enumerate(padding):
+            f_mask = self.zoom_mask(frame, coords,p)
+            frame_mask = frame.copy()
+            # frame_mask[self.mask] = 0
+            frame_mask[~f_mask] = frame.max() + 1
+            seg,thresh,max_score = otsu_algo(frame_mask)
+            if max_score > best_score:
+                best_score = max_score
+                best_seg = seg
+                best_mask = f_mask
+        return best_seg.astype(bool),best_mask
+
+
+
+
+
+
+
+
+
+
 
 
 

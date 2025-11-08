@@ -8,8 +8,8 @@ def load_data(directory, file):
     return df
 
 # Load and clean data
-data = load_data("Data", "normalized_file_Inlet_Treat_Parameter.csv")
-# data.rename(columns={'Unnamed: 0': 'ID'}, inplace=True)
+data = load_data("Data", "Inlet_Treat_Parameter_wphframe.csv")
+data.rename(columns={'Unnamed: 0': 'ID'}, inplace=True)
 data.drop("ID", axis=1, inplace=True)
 
 # Display info
