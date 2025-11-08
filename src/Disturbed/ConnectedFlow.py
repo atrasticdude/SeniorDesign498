@@ -14,7 +14,6 @@ class connectedflow(object):
     def connected(self,mat,thereshold,api):
         connected_com, num_class = connected_component_binary(mat,8)
         pics = []
-
         val, counts = np.unique(connected_com, return_counts=True)
         sort_index = np.argsort(counts)[::-1]
         sort_index = sort_index[:thereshold]

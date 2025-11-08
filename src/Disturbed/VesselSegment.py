@@ -12,9 +12,9 @@ class VesselSegment(object):
         self.dsa = dsa
         self.mask = mask.astype(bool)
         self.coords = self.find_mask_boundaries()
+        self.f_mask = self.zoom_mask(self.dsa[frame_num,:,:], self.coords,padding)
         self.segmented = self.add_segment_mask(frame_num)
-        self.f_mask = self.zoom_mask(self.segmented, self.coords,padding)
-        self.grow_coordinates = self.find_valid_coords_distance(self.coords, self.f_mask)
+        self.grow_coordinates = self.find_valid_coords_distance(self.coords)
 
 
 
@@ -38,8 +38,8 @@ class VesselSegment(object):
         return f_mask
 
 
-    def find_valid_coords_distance(self, coords, f_mask, margin=2):
-        region = self.segmented & f_mask
+    def find_valid_coords_distance(self, coords, margin=2):
+        region = self.segmented
         eroded_region = binary_erosion(region)
         boundary_mask = region & (~eroded_region)
         dist = distance_transform_edt(~boundary_mask)
@@ -49,17 +49,51 @@ class VesselSegment(object):
 
         if valid:
             valid_y, valid_x = zip(*valid)
-            return np.array(valid_y), np.array(valid_x)
+            valid_y = np.array(valid_y, dtype=int)
+            valid_x = np.array(valid_x, dtype=int)
+            return valid_y, valid_x
         else:
-            return np.array([]), np.array([])
+            return np.array([], dtype=int), np.array([], dtype=int)
 
     def add_segment_mask(self, frame_num):
-        frame = self.dsa[frame_num, :, :]
+        frame = self.dsa[frame_num, :, :].copy()
+        frame[self.mask] = 0
+        frame[~self.f_mask] = frame.max() + 1
         _, seg = global_thresholding(frame)
-        seg = seg.copy()
+        return seg.astype(bool)
+    # def add_segment_mask(self, frame_num):
+    #     frame = self.dsa[frame_num, :, :]
+    #     _, seg = global_thresholding(frame)
+    #     seg = seg.copy()
+    #     seg = seg.astype(bool)
+    #     seg[self.mask] = 0
+    #     return seg
+
+    def find_missing_coords(self,frame_num, difference):
+        frame = self.dsa[frame_num, :, :].copy()
+        frame[~self.f_mask] = frame.max() + 1
+        hist, bins = np.histogram(frame, bins=256, range=(0, 256))
+        sorted_hist_indices = np.argsort(hist)[::-1]
+        sorted_counts = hist[sorted_hist_indices]
+        sorted_bins = bins[sorted_hist_indices]
+        for k in range(3,len(sorted_bins)-1):
+            if np.abs(sorted_bins[k+1] - sorted_bins[k]) > difference:
+                threshold = min(sorted_bins[k+1],sorted_bins[k])
+        _, seg = global_thresholding(frame,threshold=threshold)
         seg = seg.astype(bool)
-        seg[self.mask] = 0
-        return seg
+        mask_coords = set(zip(*np.where(self.mask)))
+        seg_coords = set(zip(*np.where(seg)))
+        missing_coords = mask_coords - seg_coords
+        if missing_coords:
+            y_missing, x_missing = zip(*missing_coords)
+            return np.array(y_missing, dtype=int), np.array(x_missing, dtype=int)
+        else:
+            return np.array([], dtype=int), np.array([], dtype=int)
+
+
+
+
+
 
 
 
