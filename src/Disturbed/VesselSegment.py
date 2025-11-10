@@ -41,7 +41,7 @@ class VesselSegment(object):
         return f_mask
 
 
-    def find_valid_coords_distance(self, coords, margin=2):
+    def find_valid_coords_distance(self, coords, margin=3):
         region = self.segmented
         eroded_region = binary_erosion(region)
         boundary_mask = region & (~eroded_region)
