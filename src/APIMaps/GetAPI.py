@@ -7,7 +7,7 @@ from utils.helperfunction import okm_grade_from_fill
 
 
 class getAPI(API):
-    def __init__(self,dsa, inlet,dsa_temp,frac = 0.1, mask = None, show_mask_stats = False, show_okelly_scale = False):
+    def __init__(self,dsa, inlet,dsa_temp,frac = 0.1, mask = None, show_mask_stats = False, show_okelly_scale = False, show_mask_tdconly = False):
         super().__init__(dsa,dsa_temp)
         if mask is not None:
             self.mask = mask.astype(bool)
@@ -21,6 +21,8 @@ class getAPI(API):
             self.results_mean, self.results_std, self.qualifying_pixels, self.qualifying_indices, self.tdc_average = self.process_mask()
         if show_okelly_scale:
             self.scale = self.okelly_marotta_scale()
+        if show_mask_tdconly:
+            self.tdc_mask = self.yInter_mask()
 
 
 
@@ -101,6 +103,19 @@ class getAPI(API):
         scale = okm_grade_from_fill(fill_percent)
         return scale
 
+    def yInter_mask(self):
+        mask_y, mask_x = np.where(self.mask != 0)
+        tdc_pixels = self.dsa[:, mask_y, mask_x]
+        y_interp = np.apply_along_axis(lambda y: self.time_density_curve(self._x, y), 0, tdc_pixels)
+        max_change = np.max(y_interp, axis=0)
+        max_inlet_change = np.max(self.inlet_tdc_inlet)
+        max_change_factor = self.threshold_fraction * max_inlet_change
+        y_valid = y_interp[:, max_change >= max_change_factor]
+        tdc_avg = np.mean(y_valid, axis=1)
+        return tdc_avg
+
+
+
 
     def get_tdc_inl_avg(self):
         tdc_inlet_average = self.dsa[:, self.inlet.astype(bool)].mean(axis=1)
@@ -109,6 +124,8 @@ class getAPI(API):
         return self.inlet_parameters
     def get_okm_scale(self):
         return self.scale
+    def get_avgtdc_mask(self):
+        return self.tdc_mask
 
 
 
