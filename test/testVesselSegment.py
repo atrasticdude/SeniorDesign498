@@ -6,6 +6,7 @@ from skimage.morphology import binary_erosion
 
 from src.Disturbed.VesselSegment import VesselSegment
 from utils.disturbedhelper import global_thresholding
+from utils.helperfunction import cubicinter
 
 dcm = pydicom.dcmread(r"Z:\Users\Artin\coiled\raw_file\ANY_134_1")
 # Convert pixel data to NumPy array
@@ -20,12 +21,33 @@ mask = tifffile.imread(r"Z:\Users\Artin\coiled\aneurysms\ANY_134_1.tif").astype(
 frame_num= 14
 
 vessel = VesselSegment(dsa, mask, frame_num)
+clean_dsa , x_noisy, y_noisy, y_clean, x_clean = vessel.detect_noisy_pixels(cubicinter=None,  deriv_percentile=90, std_percentile=90, smoothing=True)
 
 f_mask = vessel.f_mask
 valid_y, valid_x = vessel.grow_coordinates
 # #########################################################################################################################################################
 # ---- Create boolean map of valid coordinates ----
 valid_map = np.zeros_like(mask, dtype=bool)
+# clean_dsa, noisy_dsa, y_clean, x_clean, y_noisy, x_noisy
+frame_to_show = 14  # choose the frame to visualize
+
+# Original DSA frame
+dsa_frame = dsa[frame_to_show]
+
+plt.figure(figsize=(8, 8))
+plt.imshow(dsa_frame, cmap='gray')
+
+# Overlay clean pixels in blue
+plt.scatter(x_clean, y_clean, color='blue', s=5, label='Clean Pixels')
+
+# Optionally overlay noisy pixels in red for comparison
+plt.scatter(x_noisy, y_noisy, color='red', s=5, label='Noisy Pixels', alpha=0.5)
+
+plt.title(f"Frame {frame_to_show}: Clean vs Noisy Pixels")
+plt.axis('off')
+plt.legend()
+plt.show()
+
 # valid_map[valid_y, valid_x] = True
 
 

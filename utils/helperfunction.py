@@ -54,9 +54,13 @@ def covariance(x,y):
                            [cov_xy, var_y]])
     print(cov_matrix)
 
-def cubicinter(x,y):
-    f_cubic = interp1d(x,y, kind='cubic')
-    return f_cubic
+def cubicinter(x,y, num_points):
+    if num_points is None:
+        num_points = len(x)
+    f_cubic = interp1d(x, y, kind='cubic')
+    x_new = np.linspace(x[0], x[-1], num_points)
+    y_interp = f_cubic(x_new)
+    return y_interp
 
 
 
