@@ -1,10 +1,11 @@
 import math
 import numpy as np
 from scipy import ndimage
-from scipy.ndimage import distance_transform_edt
+from scipy.ndimage import distance_transform_edt, median_filter
 from skimage.morphology import binary_erosion
 
 from utils.disturbedhelper import global_thresholding, otsu_algo
+from utils.helperfunction import cubicinter
 
 
 class VesselSegment(object):
@@ -84,7 +85,7 @@ class VesselSegment(object):
             if np.abs(sorted_bins[k+1] - sorted_bins[k]) > difference:
                 threshold = min(sorted_bins[k+1],sorted_bins[k])
                 break
-        _, seg = global_thresholding(frame,threshold=threshold)
+        _, seg = global_thresholding(frame,threshold)
         seg = seg.astype(bool)
         mask_coords = set(zip(*np.where(self.mask)))
         seg_coords = set(zip(*np.where(seg)))
@@ -112,6 +113,63 @@ class VesselSegment(object):
                 best_seg = seg
                 best_mask = f_mask
         return best_seg.astype(bool),best_mask
+
+    # def adjust_frame(self):
+    #    dsa_copy = self.dsa.copy()
+    #    num_frames = dsa_copy.shape[0]
+    #    y, x = np.where(self.mask)
+    #    pixel_values = dsa_copy[:, y, x]
+    #    if cubicinter is not None:
+    #        x_axis = np.arange(num_frames)
+    #        y_interp = np.apply_along_axis(lambda y: cubicinter(x_axis, y), 0, pixel_values)
+    #    else:
+    #        y_interp = pixel_values
+    #    dy_dt = np.diff(y_interp, axis=0)
+    #    threshold = np.percentile(np.abs(dy_dt), 80)
+    #    max_deriv = np.max(np.abs(dy_dt), axis=0)
+    #    pixel_spike_mask = max_deriv >= threshold
+    #    y_spike = y[pixel_spike_mask]
+    #    x_spike = x[pixel_spike_mask]
+    #    spike_dsa = dsa_copy[:, y_spike, x_spike]
+    #    return spike_dsa, y_spike, x_spike
+    import numpy as np
+    from scipy.ndimage import median_filter
+
+    def detect_noisy_pixels(self, cubicinter=None, deriv_percentile=80, std_percentile=80, smoothing=True):
+        dsa_copy = self.dsa.copy()
+        num_frames = dsa_copy.shape[0]
+
+        if smoothing:
+            dsa_copy = np.array([median_filter(frame, size=3) for frame in dsa_copy])
+
+        y, x = np.where(self.mask)
+        pixel_values = dsa_copy[:, y, x]
+
+        if cubicinter is not None:
+            x_axis = np.arange(num_frames)
+            pixel_values = np.apply_along_axis(lambda yv: cubicinter(x_axis, yv), 0, pixel_values)
+
+        dy_dt = np.diff(pixel_values, axis=0)
+        max_deriv = np.max(np.abs(dy_dt), axis=0)
+        temporal_std = np.std(pixel_values, axis=0)
+
+        deriv_threshold = np.percentile(max_deriv, deriv_percentile)
+        std_threshold = np.percentile(temporal_std, std_percentile)
+        noise_mask = (max_deriv >= deriv_threshold) | (temporal_std >= std_threshold)
+
+        y_noisy = y[noise_mask]
+        x_noisy = x[noise_mask]
+        y_clean = y[~noise_mask]
+        x_clean = x[~noise_mask]
+
+        noisy_dsa = dsa_copy[:, y_noisy, x_noisy]
+        clean_dsa = dsa_copy[:, y_clean, x_clean]
+
+        return clean_dsa , x_noisy, y_noisy, y_clean, x_clean
+
+
+
+
 
 
 

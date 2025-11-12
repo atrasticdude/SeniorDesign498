@@ -4,7 +4,7 @@ from collections import deque
 import numpy as np
 import cv2
 from tensorboard.compat.tensorflow_stub.dtypes import float32
-
+from scipy.interpolate import interp1d
 
 def get_bases_id(name):
     return "_".join(name.split("_")[:2])
@@ -54,7 +54,9 @@ def covariance(x,y):
                            [cov_xy, var_y]])
     print(cov_matrix)
 
-
+def cubicinter(x,y):
+    f_cubic = interp1d(x,y, kind='cubic')
+    return f_cubic
 
 
 
