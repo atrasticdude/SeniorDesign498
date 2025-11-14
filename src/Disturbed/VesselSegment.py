@@ -135,7 +135,7 @@ class VesselSegment(object):
     import numpy as np
     from scipy.ndimage import median_filter
 
-    def detect_noisy_pixels(self, cubicinter=None, deriv_percentile=60, std_percentile=80, smoothing=True):
+    def detect_noisy_pixels(self, cubicinter=None, deriv_percentile=80, std_percentile=80, smoothing=True):
         dsa_copy = self.dsa.copy()
         num_frames = dsa_copy.shape[0]
 
