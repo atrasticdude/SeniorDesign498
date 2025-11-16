@@ -1,10 +1,12 @@
 import math
+
+import cv2
 import numpy as np
 from scipy import ndimage
 from scipy.ndimage import distance_transform_edt, median_filter
 from skimage.morphology import binary_erosion
 
-from utils.disturbedhelper import global_thresholding, otsu_algo
+from utils.disturbedhelper import global_thresholding, otsu_algo, mask_stats, skeleton_midpoint
 from utils.helperfunction import cubicinter
 
 
@@ -107,7 +109,7 @@ class VesselSegment(object):
             frame_mask = frame.copy()
             # frame_mask[self.mask] = 0
             frame_mask[~f_mask] = frame.max() + 1
-            seg,thresh,max_score = otsu_algo(frame_mask)
+            seg,thresh,max_score,score = otsu_algo(frame_mask)
             if max_score > best_score:
                 best_score = max_score
                 best_seg = seg
@@ -166,6 +168,59 @@ class VesselSegment(object):
         clean_dsa = dsa_copy[:, y_clean, x_clean]
 
         return clean_dsa , x_noisy, y_noisy, y_clean, x_clean
+
+    def find_true_diff(self,mask_image):
+        mask = mask_image.copy()
+        mask_area, mask_w, mask_h = mask_stats(mask)
+        area_thres = mask_area / 5
+        width_thres = mask_w / 5
+        height_thres = mask_h / 5
+
+        seg, thresh, max_score, score = otsu_algo(mask_image)
+        pixels = np.arange(len(score))
+
+        zipped = list(zip(score, pixels))
+        sorted_list = sorted(zipped, key=lambda x: x[0], reverse=True)
+        top_ten = sorted_list[:10]
+        pixel_indices = [item[1] for item in top_ten]
+
+        pixel_centroids = []
+        for p in pixel_indices:
+            thres_mask = mask <= p
+            thres_mask_uint8 = thres_mask.astype(np.uint8) * 255
+            num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(thres_mask_uint8)
+            # if num_labels > 8 or num_labels < 2:
+            #     continue
+
+            valid_centroids = []
+            for i in range(1, num_labels):
+                x, y, w, h, area = stats[i]
+                # if area > area_thres and w > width_thres and h > height_thres:
+                #     continue
+                component = labels == i
+                if w < 4:
+                    sy, sx = skeleton_midpoint(component)
+                    valid_centroids.append((sx, sy))
+                else:
+                    valid_centroids.append(tuple(centroids[i]))
+            pixel_centroids.append((p, valid_centroids))
+        return pixel_centroids
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

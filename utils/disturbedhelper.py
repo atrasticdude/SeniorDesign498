@@ -53,7 +53,30 @@ def otsu_algo(img):
     k = np.argmax(score)
     seg = np.zeros_like(img, dtype=np.uint8)
     seg[img > k] = 255
-    return seg, k,np.max(score)
+    return seg, k,np.max(score),score
+
+import numpy as np
+from skimage.morphology import skeletonize
+
+def skeleton_midpoint(component_mask):
+    mask = component_mask.astype(bool)
+    skel = skeletonize(mask)
+    ys, xs = np.where(skel)
+    if len(xs) == 0:
+        return None
+    mid_idx = len(xs) // 2
+    return ys[mid_idx], xs[mid_idx]
+
+def mask_stats(mask):
+    mask_bool = mask.astype(bool)
+    area = np.sum(mask_bool)
+    ys, xs = np.where(mask_bool)
+    min_y, max_y = ys.min(), ys.max()
+    min_x, max_x = xs.min(), xs.max()
+    width = max_x - min_x + 1
+    height = max_y - min_y + 1
+    return area, width, height
+
 
 def connected_component_binary(x,connect):
     mat = (x > 0).astype(np.uint8)
