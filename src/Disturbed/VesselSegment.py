@@ -169,7 +169,43 @@ class VesselSegment(object):
 
         return clean_dsa , x_noisy, y_noisy, y_clean, x_clean
 
-    def find_true_diff(self,mask_image):
+    # def find_true_diff(self,mask_image):
+    #     mask = mask_image.copy()
+    #     mask_area, mask_w, mask_h = mask_stats(mask)
+    #     area_thres = mask_area / 5
+    #     width_thres = mask_w / 5
+    #     height_thres = mask_h / 5
+    #
+    #     seg, thresh, max_score, score = otsu_algo(mask_image)
+    #     pixels = np.arange(len(score))
+    #
+    #     zipped = list(zip(score, pixels))
+    #     sorted_list = sorted(zipped, key=lambda x: x[0], reverse=True)
+    #     top_ten = sorted_list[:10]
+    #     pixel_indices = [item[1] for item in top_ten]
+    #
+    #     pixel_centroids = []
+    #     for p in pixel_indices:
+    #         thres_mask = mask <= p
+    #         thres_mask_uint8 = thres_mask.astype(np.uint8) * 255
+    #         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(thres_mask_uint8)
+    #         # if num_labels > 8 or num_labels < 2:
+    #         #     continue
+    #
+    #         valid_centroids = []
+    #         for i in range(1, num_labels):
+    #             x, y, w, h, area = stats[i]
+    #             # if area > area_thres and w > width_thres and h > height_thres:
+    #             #     continue
+    #             component = labels == i
+    #             if w < 4:
+    #                 sy, sx = skeleton_midpoint(component)
+    #                 valid_centroids.append((sx, sy))
+    #             else:
+    #                 valid_centroids.append(tuple(centroids[i]))
+    #         pixel_centroids.append((p, valid_centroids))
+    #     return pixel_centroids
+    def find_true_diff(self, mask_image):
         mask = mask_image.copy()
         mask_area, mask_w, mask_h = mask_stats(mask)
         area_thres = mask_area / 5
@@ -178,32 +214,34 @@ class VesselSegment(object):
 
         seg, thresh, max_score, score = otsu_algo(mask_image)
         pixels = np.arange(len(score))
-
         zipped = list(zip(score, pixels))
-        sorted_list = sorted(zipped, key=lambda x: x[0], reverse=True)
-        top_ten = sorted_list[:10]
+        top_ten = sorted(zipped, key=lambda x: x[0], reverse=True)[:10]
         pixel_indices = [item[1] for item in top_ten]
 
         pixel_centroids = []
+
         for p in pixel_indices:
-            thres_mask = mask <= p
-            thres_mask_uint8 = thres_mask.astype(np.uint8) * 255
-            num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(thres_mask_uint8)
-            # if num_labels > 8 or num_labels < 2:
-            #     continue
+            thres_mask = (mask_image <= p).astype(np.uint8) * 255
+
+            num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(thres_mask)
 
             valid_centroids = []
+
             for i in range(1, num_labels):
                 x, y, w, h, area = stats[i]
-                # if area > area_thres and w > width_thres and h > height_thres:
+                # if area > area_thres or w > width_thres or h > height_thres:
                 #     continue
                 component = labels == i
-                if w < 4:
-                    sy, sx = skeleton_midpoint(component)
-                    valid_centroids.append((sx, sy))
+                if w < 4 or h < 4:
+                    midpoint = skeleton_midpoint(component)
+                    if midpoint is not None:
+                        sy, sx = midpoint
+                        valid_centroids.append((sx, sy))
                 else:
                     valid_centroids.append(tuple(centroids[i]))
+
             pixel_centroids.append((p, valid_centroids))
+
         return pixel_centroids
 
 
