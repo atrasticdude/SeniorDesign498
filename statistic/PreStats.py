@@ -12,8 +12,8 @@ def load_data(directory, file):
     df = pd.read_csv(csv_path)
     return df
 
-# Load and clean data
-data = load_data("Data", "normalized_file_Inlet_Pre_Parameter.csv")
+#data = load_data("Data", "normalized_file_Inlet_Pre_Parameter.csv") Load and clean data
+
 data.drop("ID", axis=1, inplace=True)
 
 # Display info
