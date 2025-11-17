@@ -52,9 +52,6 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
-# === Convert data to tensors ===
-
-# === Prepare data ===
 X = np.array([img for _, img in data_with_labels], dtype=np.float32) / 255.0
 y = np.array([label for label, _ in data_with_labels], dtype=np.float32)
 
@@ -63,12 +60,10 @@ y_tensor = torch.tensor(y).unsqueeze(1)  # shape (N, 1)
 
 dataset = TensorDataset(X_tensor, y_tensor)
 
-# === Split into train + test once ===
 train_idx, test_idx = train_test_split(np.arange(len(dataset)), test_size=0.2, random_state=42)
 train_set_full = Subset(dataset, train_idx)
 test_set = Subset(dataset, test_idx)
 
-# === Monte Carlo split function for train/validation ===
 def monte_carlo_train_val_splits(train_set, val_size=0.2, iterations=5, batch_size=16):
     splits = []
     n_total = len(train_set)
@@ -88,7 +83,6 @@ def monte_carlo_train_val_splits(train_set, val_size=0.2, iterations=5, batch_si
         splits.append((train_loader, val_loader))
     return splits
 
-# === CNN ===
 class SimpleCNN(nn.Module):
     def __init__(self):
         super(SimpleCNN, self).__init__()
@@ -114,7 +108,6 @@ class SimpleCNN(nn.Module):
         x = torch.sigmoid(self.fc_out(x))
         return x
 
-# === Training ===
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = SimpleCNN().to(device)
 criterion = nn.BCELoss()
@@ -124,10 +117,8 @@ batch_size = 16
 val_size = 0.2
 iterations = 5
 
-# Generate Monte Carlo train/val splits
 mc_splits = monte_carlo_train_val_splits(train_set_full, val_size=val_size, iterations=iterations, batch_size=batch_size)
 
-# Use first Monte Carlo split for training here (example)
 train_loader, val_loader = mc_splits[0]
 
 train_losses, val_losses = [], []
@@ -137,7 +128,7 @@ plt.ion()
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
 for epoch in range(num_epochs):
-    # === Training ===
+
     model.train()
     running_loss = 0
     correct = 0
@@ -161,7 +152,7 @@ for epoch in range(num_epochs):
     train_losses.append(train_loss)
     train_accs.append(train_acc)
 
-    # === Validation ===
+
     model.eval()
     val_loss = 0
     correct = 0
@@ -186,7 +177,6 @@ for epoch in range(num_epochs):
           f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f} | "
           f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
 
-    # === Update plots after each epoch ===
     ax1.clear()
     ax1.plot(range(1, epoch + 2), train_losses, label='Train Loss')
     ax1.plot(range(1, epoch + 2), val_losses, label='Validation Loss')
@@ -211,7 +201,6 @@ plt.show()
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
-# === After validation loop in each epoch ===
 y_true, y_pred = [], []
 
 with torch.no_grad():
@@ -222,10 +211,9 @@ with torch.no_grad():
         y_true.extend(labels.cpu().numpy())
         y_pred.extend(preds.cpu().numpy())
 
-# Compute confusion matrix
+
 cm = confusion_matrix(y_true, y_pred)
 
-# Plot confusion matrix
 plt.figure(figsize=(5, 4))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.xlabel('Predicted')
