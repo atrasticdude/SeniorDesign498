@@ -29,30 +29,55 @@ class PCAsegment(object):
         pixel_contribution_matrix = signal_scores @ signal_components
         pixel_contribution_matrix += mean_pixel
         return pixel_contribution_matrix, pixel_contribution_map
+    # def connected_components(self,pc_matrix):
 
-dcm = pydicom.dcmread(r"Z:\Users\Artin\coiled\raw_file\ANY_103_1")
-dsa = dcm.pixel_array
 
-if dsa.ndim == 2:
-    dsa = np.expand_dims(dsa, axis=0)
+# dcm = pydicom.dcmread(r"Z:\Users\Artin\coiled\raw_file\ANY_300_1")
+# dsa = dcm.pixel_array
+#
+# if dsa.ndim == 2:
+#     dsa = np.expand_dims(dsa, axis=0)
+#
+# mask = tifffile.imread(r"Z:\Users\Artin\coiled\aneurysms\ANY_300_1.tif").astype(bool)
+#
+# dsa_tensor = torch.tensor(dsa, dtype=torch.float32)
+#
+# pca_seg = PCAsegment(dsa_tensor, mask)
+# pixel_matrix, pixel_map = pca_seg.pca_matrix(var_threshold=0.01)
+#
+# T = pixel_matrix.shape[0]
+# mask = pca_seg.mask
+#
+# for t in range(T):
+#     frame_pixel_map = np.zeros(mask.shape)
+#     frame_pixel_map[mask] = pixel_matrix[t]
+#
+#     plt.imshow(frame_pixel_map, cmap='hot')
+#     plt.title(f"Pixel Contribution - Frame {t}")
+#     plt.colorbar()
+#     plt.axis('off')
+#     plt.show()
+#     time.sleep(0.1)
 
-mask = tifffile.imread(r"Z:\Users\Artin\coiled\aneurysms\ANY_103_1.tif").astype(bool)
 
-dsa_tensor = torch.tensor(dsa, dtype=torch.float32)
 
-pca_seg = PCAsegment(dsa_tensor, mask)
-pixel_matrix, pixel_map = pca_seg.pca_matrix(var_threshold=0.01)
-
-T = pixel_matrix.shape[0]
-mask = pca_seg.mask
-
-for t in range(T):
-    frame_pixel_map = np.zeros(mask.shape)
-    frame_pixel_map[mask] = pixel_matrix[t]
-
-    plt.imshow(frame_pixel_map, cmap='hot')
-    plt.title(f"Pixel Contribution - Frame {t}")
-    plt.colorbar()
-    plt.axis('off')
-    plt.show()
-    time.sleep(0.1)
+# dcm = pydicom.dcmread(r"Z:\Users\Artin\coiled\raw_file\ANY_319_1")
+# dsa = dcm.pixel_array
+# if dsa.ndim == 2:
+#     dsa = np.expand_dims(dsa, axis=0)
+#
+#
+# mask = tifffile.imread(r"Z:\Users\Artin\coiled\aneurysms\ANY_319_1.tif").astype(bool)
+#
+# dsa_tensor = torch.tensor(dsa, dtype=torch.float32)
+#
+# pca_seg = PCAsegment(dsa_tensor, mask)
+# pixel_mat,pixel_map = pca_seg.pca_matrix(var_threshold=0.01)
+# pixel_map_np = pixel_map.numpy()
+#
+# plt.figure(figsize=(6, 6))
+# plt.imshow(pixel_map_np, cmap='hot')
+# plt.colorbar(label="Contribution")
+# plt.title("Pixel Contribution Map")
+# plt.axis('off')
+# plt.show()
