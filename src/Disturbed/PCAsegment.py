@@ -60,10 +60,10 @@ class PCAsegment(object):
         frame_stack = []
         thresholds = []
 
-        for i in range(time):
-            crop_out = dsa[i][y, x]
+        for i in range(1,time):
+            crop_out = dsa[i-1][y, x]
             threshold = crop_out[min_value_pixel[i]]
-            segmented = (crop_out <= threshold).to(torch.uint8)
+            segmented = (crop_out >= threshold).to(torch.uint8)
             stack = torch.zeros_like(mask, dtype=torch.uint8)
             stack[y, x] = segmented
             frame_stack.append(stack)
@@ -134,20 +134,20 @@ if __name__ == '__main__':
     plt.show()
     print(thresh)
 
-    # for i in range(len(frame_stack)):
-    #     original = dsa[i]
-    #     segmented = frame_stack[i]
-    #
-    #     plt.figure(figsize=(12, 5))
-    #
-    #     plt.subplot(1, 2, 1)
-    #     plt.imshow(original, cmap='gray')
-    #     plt.title(f"Original Frame {i}")
-    #     plt.axis('off')
-    #
-    #     plt.subplot(1, 2, 2)
-    #     plt.imshow(segmented, cmap='gray')
-    #     plt.title(f"Segmented Frame {i}")
-    #     plt.axis('off')
-    #
-    #     plt.show()
+    for i in range(len(frame_stack)):
+        original = dsa[i]
+        segmented = frame_stack[i]
+
+        plt.figure(figsize=(12, 5))
+
+        plt.subplot(1, 2, 1)
+        plt.imshow(original, cmap='gray')
+        plt.title(f"Original Frame {i}")
+        plt.axis('off')
+
+        plt.subplot(1, 2, 2)
+        plt.imshow(segmented, cmap='gray')
+        plt.title(f"Segmented Frame {i}")
+        plt.axis('off')
+
+        plt.show()
