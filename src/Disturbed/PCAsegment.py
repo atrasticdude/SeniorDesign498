@@ -58,7 +58,7 @@ class PCAsegment(object):
             thresholds.append(threshold)
         return frame_stack, thresholds
 
-    def connected_components(self, K = 2, threshold = 0.90):
+    def connected_components(self, K = 2, threshold = 0.85):
         mask = torch.tensor(self.mask, dtype=torch.bool)
         k_arr = torch.arange(1, K+1)
         map_arr = []
@@ -90,14 +90,14 @@ class PCAsegment(object):
 
 
 if __name__ == '__main__':
-    dcm = pydicom.dcmread(r"C:\Users\artdude\Documents\lookslike_493\ANY_109_1")
+    dcm = pydicom.dcmread(r"Z:\Users\Artin\coiled\raw_file\ANY_375_1")
     dsa = dcm.pixel_array
     # dsa = dsa[4:11,:,:]
 
     if dsa.ndim == 2:
         dsa = np.expand_dims(dsa, axis=0)
 
-    mask = tifffile.imread(r"C:\Users\artdude\Documents\lookslike_493\ANY_109_1.tif").astype(bool)
+    mask = tifffile.imread(r"Z:\Users\Artin\coiled\aneurysms\ANY_375_1.tif").astype(bool)
 
     dsa_tensor = torch.tensor(dsa, dtype=torch.float32)
 
